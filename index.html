@@ -1172,7 +1172,11 @@
 
         // ==================== JOB MODAL ====================
         function openJobModal(dateKey, slotIndex) {
-            closeDayDetail(); // Close the day detail modal first so job form isn't hidden
+            // Force close day detail modal completely
+            const dayDetailModal = document.getElementById('dayDetailModal');
+            dayDetailModal.classList.remove('show');
+            dayDetailModal.style.display = 'none';
+            
             selectedSlot = { dateKey, slotIndex };
             const dayJobs = jobs[dateKey] || [{}, {}, {}, {}];
             const job = dayJobs[slotIndex] || {};
