@@ -846,7 +846,8 @@
         const SLACK_WEBHOOK = "https://hooks.slack.com/services/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";
 
         // ==================== APP STATE ====================
-        const PASSWORD = 'comfy2024';
+        const ADVISOR_PASSWORD = 'comfy2024';  // Comfort Advisor password
+        const ADMIN_PASSWORD = 'admin2024#';   // Admin password (more secure)
         let currentRole = 'advisor';
         let currentDate = new Date();
         let selectedSlot = null;
@@ -1009,8 +1010,11 @@
                 return;
             }
 
-            if (password !== PASSWORD) {
-                errorDiv.textContent = 'Incorrect password';
+            // Check password based on selected role
+            const correctPassword = currentRole === 'advisor' ? ADVISOR_PASSWORD : ADMIN_PASSWORD;
+            
+            if (password !== correctPassword) {
+                errorDiv.textContent = 'Incorrect password for this role';
                 return;
             }
 
