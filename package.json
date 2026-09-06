@@ -1,0 +1,21 @@
+{
+  "name": "comfy-hvac-calendar",
+  "version": "1.0.0",
+  "description": "Comfy HVAC Job Board with Slack Integration",
+  "main": "scripts/screenshot.js",
+  "scripts": {
+    "test": "node scripts/screenshot.js"
+  },
+  "keywords": [
+    "hvac",
+    "calendar",
+    "slack",
+    "job-scheduling"
+  ],
+  "author": "Comfy HVAC",
+  "license": "MIT",
+  "dependencies": {
+    "playwright": "^1.40.0",
+    "puppeteer": "^21.0.0"
+  }
+}
