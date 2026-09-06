@@ -1,22 +1,28 @@
 
- <!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
 <script>
-    var firebaseConfig = {
-        apiKey: "AIzaSyAFW0L1ISzZohMIOvEODIVxKPk5D23qSzs",
-        authDomain: "comfy-job-board.firebaseapp.com",
-        databaseURL: "https://comfy-job-board-default-rtdb.firebaseio.com",
-        projectId: "comfy-job-board",
-        storageBucket: "comfy-job-board.firebasestorage.app",
-        messagingSenderId: "959844879886",
-        appId: "1:959844879886:web:0bd3df6ce1bcb9521776f5f"
-    };
-    firebase.initializeApp(firebaseConfig);
-    var database = firebase.database();
-</script>
-}
+// Firebase Configuration
+const firebaseConfig = {
+    databaseURL: "https://comfy-job-board-default-rtdb.firebaseio.com"
+};
+
+// Firebase REST API functions
+const database = {
+    ref: function(path) {
+        return {
+            set: function(data) {
+                return fetch(firebaseConfig.databaseURL + '/' + path + '.json', {
+                    method: 'PUT',
+                    body: JSON.stringify(data)
+                });
+            },
+            on: function(event, callback) {
+                fetch(firebaseConfig.databaseURL + '/' + path + '.json')
+                    .then(r => r.json())
+                    .then(data => callback({val: () => data}));
+            }
+        };
+    }
+};
 </script>
 <!DOCTYPE html>
 <html lang="en">
