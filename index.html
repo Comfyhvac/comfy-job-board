@@ -437,6 +437,10 @@
             display: flex;
         }
 
+        #jobModal {
+            z-index: 3000;
+        }
+
         .modal-content {
             background: white;
             border-radius: 8px;
@@ -1166,6 +1170,7 @@
 
         // ==================== JOB MODAL ====================
         function openJobModal(dateKey, slotIndex) {
+            closeDayDetail(); // Close the day detail modal first so job form isn't hidden
             selectedSlot = { dateKey, slotIndex };
             const dayJobs = jobs[dateKey] || [{}, {}, {}, {}];
             const job = dayJobs[slotIndex] || {};
