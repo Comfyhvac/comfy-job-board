@@ -1,0 +1,38 @@
+name: Post Calendar to Slack
+
+on:
+  schedule:
+    - cron: '0 7 * * *'
+    - cron: '0 13 * * *'
+  workflow_dispatch:
+
+jobs:
+  post-calendar:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Post calendar to Slack
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          curl -X POST $SLACK_WEBHOOK_URL \
+            -H 'Content-type: application/json' \
+            --data '{
+              "text": "📅 Comfy HVAC - Install Calendar",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "📅 September 2026 - Install Calendar"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Calendar posted at 7 AM & 1 PM daily"
+                  }
+                }
+              ]
+            }'
