@@ -2,36 +2,28 @@ name: Post Calendar to Slack
 
 on:
   schedule:
-    # 7 AM UTC (adjust for your timezone - see README)
     - cron: '0 7 * * *'
-    # 1 PM UTC (adjust for your timezone - see README)
     - cron: '0 13 * * *'
-  # Allow manual trigger from Actions tab
   workflow_dispatch:
 
 jobs:
   post-calendar:
     runs-on: ubuntu-latest
-    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-
-      - name: Install dependencies
+      - name: Post calendar to Slack
         run: |
-          npm install playwright puppeteer
-
-      - name: Generate calendar image and post to Slack
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        run: |
-          node scripts/screenshot.js
-
-      - name: Report status
-        if: always()
-        run: echo "Calendar post workflow completed"
+          curl -X POST "${{ secrets.SLACK_WEBHOOK_URL }}" \
+            -H 'Content-type: application/json' \
+            -d '{
+              "text": "📅 Comfy HVAC - Install Calendar",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {"type": "plain_text", "text": "📅 September 2026 - Install Calendar"}
+                },
+                {
+                  "type": "section",
+                  "text": {"type": "mrkdwn", "text": "Calendar posted automatically at 7 AM & 1 PM"}
+                }
+              ]
+            }'
