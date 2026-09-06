@@ -12,4 +12,4 @@ jobs:
     steps:
       - name: Notify Slack
         run: |
-          curl "${{ secrets.SLACK_WEBHOOK_URL }}" -d '{"text":"📅 Comfy HVAC Calendar - 7 AM & 1 PM Daily"}'
+          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} -H 'Content-type: application/json' --data '{"text":"📅 Comfy HVAC Install Calendar - Posted at 7 AM & 1 PM"}'
