@@ -12,4 +12,4 @@ jobs:
     steps:
       - name: Notify Slack
         run: |
-          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} -H 'Content-type: application/json' --data '{"text":"📅 Comfy HVAC Install Calendar - Posted at 7 AM & 1 PM"}'
+         curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} -H 'Content-type: application/json' --data '{"text":"📅 Comfy HVAC Install Calendar - Posted at 7 AM & 1 PM","blocks":[{"type":"section","text":{"type":"mrkdwn","text":"📅 *Comfy HVAC Install Calendar*\n\n<https://comfyhvac.github.io/comfy-job-board/|👉 Click here to view the calendar>"}},{"type":"divider"}]}'
