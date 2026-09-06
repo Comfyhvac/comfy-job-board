@@ -14,17 +14,9 @@
     appId: "1:959844879886:web:0bd3df6ce1bcb9521776f5f"
   };
 
- // Initialize Firebase - wait for SDK to load
-let database;
-if (window.firebase) {
-    firebase.initializeApp(firebaseConfig);
-    database = firebase.database();
-} else {
-    // Fallback: wait for Firebase to load
-    window.addEventListener('load', function() {
-        firebase.initializeApp(firebaseConfig);
-        database = firebase.database();
-    });
+ // Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
 }
 </script>
 <!DOCTYPE html>
