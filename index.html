@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Comfy HVAC - Job Board</title>
+    <title>Comfy HVAC - Appointment Availability</title>
     <style>
         * {
             margin: 0;
@@ -17,6 +17,443 @@
             color: #333;
         }
 
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0C447C 0%, #185FA5 100%);
+            color: white;
+            padding: 25px 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .service-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .service-btn {
+            padding: 12px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .service-btn:hover {
+            border-color: #185FA5;
+            background: #f0f7ff;
+        }
+
+        .service-btn.active {
+            background: #0C447C;
+            color: white;
+            border-color: #0C447C;
+        }
+
+        .calendar-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            background: #185FA5;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .nav-btn:hover {
+            background: #0C447C;
+        }
+
+        .month-title {
+            text-align: center;
+            font-weight: 600;
+            color: #0C447C;
+            font-size: 16px;
+            min-width: 150px;
+        }
+
+        .calendar {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .calendar-header {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            background: #185FA5;
+            color: white;
+        }
+
+        .day-name {
+            padding: 12px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: #e0e0e0;
+            padding: 1px;
+        }
+
+        .calendar-day {
+            background: white;
+            min-height: 70px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .calendar-day:hover {
+            border-color: #185FA5;
+            background: #f0f7ff;
+        }
+
+        .calendar-day.other-month {
+            background: #f5f5f5;
+            color: #ccc;
+            cursor: default;
+        }
+
+        .calendar-day.other-month:hover {
+            background: #f5f5f5;
+            border-color: transparent;
+        }
+
+        .calendar-day.estimator-available {
+            background: #d1ecf1;
+            border-color: #0c5460;
+        }
+
+        .calendar-day.estimator-available:hover {
+            background: #bee5eb;
+        }
+
+        .calendar-day.technician-available {
+            background: #d4edda;
+            border-color: #155724;
+        }
+
+        .calendar-day.technician-available:hover {
+            background: #c3e6cb;
+        }
+
+        .calendar-day.estimator-full {
+            background: #f8d7da;
+            border-color: #721c24;
+        }
+
+        .calendar-day.technician-full {
+            background: #ffeaa7;
+            border-color: #d4a500;
+        }
+
+        .calendar-day.selected {
+            background: #0C447C;
+            color: white;
+            border-color: #0C447C;
+        }
+
+        .day-number {
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .availability-indicator {
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .availability-indicator.available {
+            color: #28a745;
+        }
+
+        .availability-indicator.booked {
+            color: #dc3545;
+        }
+
+        /* Day Detail Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            background: #0C447C;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .slots-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .time-slot {
+            padding: 14px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .time-slot:hover:not(.disabled) {
+            border-color: #185FA5;
+            background: #f0f7ff;
+        }
+
+        .time-slot.selected {
+            background: #0C447C;
+            color: white;
+            border-color: #0C447C;
+        }
+
+        .time-slot.disabled {
+            background: #f0f0f0;
+            color: #999;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #0C447C;
+            font-size: 13px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #185FA5;
+            box-shadow: 0 0 0 2px rgba(24, 95, 165, 0.1);
+        }
+
+        .required {
+            color: #D9534F;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            padding: 12px;
+            background: #ddd;
+            color: #333;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .btn-cancel:hover {
+            background: #ccc;
+        }
+
+        .btn-book {
+            flex: 1;
+            padding: 12px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .btn-book:hover:not(:disabled) {
+            background: #218838;
+        }
+
+        .btn-book:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .booking-summary {
+            background: #e7f3ff;
+            border-left: 4px solid #185FA5;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #185FA5;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .success-message {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            border: 2px solid #f5c6cb;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 13px;
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #185FA5;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #0C447C;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+
+            .calendar-day {
+                min-height: 60px;
+                font-size: 12px;
+            }
+
+            .slots-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Login Screen Styles */
         .login-screen {
             position: fixed;
             top: 0;
@@ -27,7 +464,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
+            z-index: 2000;
         }
 
         .login-container {
@@ -71,33 +508,9 @@
             border-color: #0C447C;
         }
 
-        .role-selector {
-            display: flex;
-            gap: 10px;
-            margin: 20px 0;
-        }
-
-        .role-btn {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid #ddd;
-            background: white;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .role-btn.active {
-            background: #0C447C;
-            color: white;
-            border-color: #0C447C;
-        }
-
         .login-btn {
             padding: 14px;
-            background: #D9534F;
+            background: #185FA5;
             color: white;
             border: none;
             border-radius: 6px;
@@ -108,900 +521,160 @@
         }
 
         .login-btn:hover {
-            background: #c9423f;
+            background: #0C447C;
         }
 
-        .error-message {
+        .login-error {
             color: #D9534F;
             font-size: 14px;
             margin-top: 10px;
-        }
-
-        .sync-status {
-            font-size: 12px;
-            color: #666;
-            margin-top: 10px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .sync-indicator {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #ddd;
-            animation: pulse 2s infinite;
-        }
-
-        .sync-indicator.synced {
-            background: #28a745;
-            animation: none;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 0.6; }
-            50% { opacity: 1; }
         }
 
         .app-container {
             display: none;
-            min-height: 100vh;
-            flex-direction: column;
         }
 
-        .app-container.show {
-            display: flex;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #0C447C 0%, #185FA5 100%);
-            color: white;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .header-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        .header h1 {
-            font-size: 24px;
-            margin: 0;
-        }
-
-        .header-info {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-            font-size: 14px;
-        }
-
-        .role-badge {
-            background: rgba(255,255,255,0.2);
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-weight: 600;
-        }
-
-        .logout-btn {
-            background: #D9534F;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background 0.3s;
-        }
-
-        .logout-btn:hover {
-            background: #c9423f;
-        }
-
-        .main-content {
-            flex: 1;
-            padding: 20px;
-            max-width: 1400px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        .controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .month-nav {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .nav-btn {
-            background: #378ADD;
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background 0.3s;
-        }
-
-        .nav-btn:hover {
-            background: #185FA5;
-        }
-
-        .current-months {
-            font-weight: 600;
-            color: #0C447C;
-            min-width: 200px;
-        }
-
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        @media (max-width: 1024px) {
-            .calendar-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .month-card {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
-        .month-title {
-            background: #185FA5;
-            color: white;
-            padding: 15px;
-            font-size: 18px;
-            font-weight: 600;
-            text-align: center;
-        }
-
-        .days-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-        }
-
-        .day-header {
-            background: #378ADD;
-            color: white;
-            padding: 10px;
-            text-align: center;
-            font-size: 12px;
-            font-weight: 600;
-            border-bottom: 1px solid #ddd;
-        }
-
-        .day-cell {
-            border-right: 1px solid #ddd;
-            border-bottom: 1px solid #ddd;
-            min-height: 120px;
-            padding: 8px;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-
-        .day-cell:nth-child(7n) {
-            border-right: none;
-        }
-
-        .day-number {
-            font-weight: 600;
-            font-size: 12px;
-            color: #0C447C;
-            margin-bottom: 4px;
-        }
-
-        .job-count-badge {
-            position: absolute;
-            top: 4px;
-            right: 4px;
-            background: #D9534F;
-            color: white;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 11px;
-            font-weight: 600;
-        }
-
-        .slots-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .job-slot {
-            flex: 1;
-            background: #f8f9fa;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 6px;
-            font-size: 11px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            overflow: hidden;
-        }
-
-        .job-slot:hover {
-            background: #e8f4f8;
-            border-color: #378ADD;
-        }
-
-        .job-slot.filled {
-            background: #e8f4f8;
-            border-color: #185FA5;
-        }
-
-        .slot-content {
-            line-height: 1.3;
-        }
-
-        .slot-label {
-            color: #999;
-            font-style: italic;
-            text-align: center;
-        }
-
-        .job-customer {
-            font-weight: 600;
-            color: #0C447C;
-        }
-
-        .job-city {
-            color: #666;
-            font-size: 10px;
-        }
-
-        .job-details {
-            color: #333;
-            font-size: 10px;
-            margin-top: 2px;
-        }
-
-        /* Mobile calendar view */
-        .day-cell.mobile-compact {
-            min-height: 50px;
-            padding: 8px 4px;
-            cursor: pointer;
-            text-align: center;
-        }
-
-        .day-cell.mobile-compact .slots-container {
-            display: none;
-        }
-
-        .day-cell.mobile-compact .day-number {
-            margin-bottom: 0;
-            font-size: 14px;
-        }
-
-        .day-cell.mobile-compact:hover {
-            background: #e8f4f8;
-        }
-
-        .day-cell.mobile-compact.has-jobs .day-number {
-            color: #D9534F;
-            font-weight: bold;
-        }
-
-        .day-cell.mobile-compact .job-indicator {
-            font-size: 10px;
-            color: #D9534F;
-            margin-top: 2px;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 2000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal.show {
-            display: flex;
-        }
-
-        #jobModal {
-            z-index: 3000;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 8px;
-            max-width: 500px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-        }
-
-        .modal-header {
-            background: #0C447C;
-            color: white;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-        }
-
-        .modal-body {
-            padding: 20px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
+        .app-container.authenticated {
             display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: #0C447C;
-            font-size: 14px;
-        }
-
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-            font-family: inherit;
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .form-group input:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #378ADD;
-            box-shadow: 0 0 0 2px rgba(55, 138, 221, 0.1);
-        }
-
-        .form-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .btn-save {
-            flex: 1;
-            padding: 12px;
-            background: #185FA5;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background 0.3s;
-        }
-
-        .btn-save:hover {
-            background: #0C447C;
-        }
-
-        .btn-cancel {
-            flex: 1;
-            padding: 12px;
-            background: #ddd;
-            color: #333;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background 0.3s;
-        }
-
-        .btn-cancel:hover {
-            background: #ccc;
-        }
-
-        .btn-delete {
-            flex: 1;
-            padding: 12px;
-            background: #D9534F;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background 0.3s;
-        }
-
-        .btn-delete:hover {
-            background: #c9423f;
-        }
-
-        .readonly-notice {
-            background: #fffbea;
-            border-left: 4px solid #D9534F;
-            padding: 12px;
-            margin-bottom: 15px;
-            border-radius: 4px;
-            color: #333;
-            font-size: 13px;
-        }
-
-        .required {
-            color: #D9534F;
-        }
-
-        @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .header-info {
-                flex-direction: column;
-                gap: 10px;
-                width: 100%;
-            }
-
-            .controls {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .month-nav {
-                justify-content: space-between;
-            }
-
-            .current-months {
-                min-width: auto;
-            }
-
-            .day-cell {
-                min-height: 50px;
-                font-size: 10px;
-                padding: 8px 4px;
-                text-align: center;
-            }
-
-            .day-cell .slots-container {
-                display: none;
-            }
-
-            .day-cell .day-number {
-                font-size: 14px;
-                margin-bottom: 2px;
-            }
-
-            .day-cell.has-jobs .day-number {
-                color: #D9534F;
-                font-weight: bold;
-            }
-
-            .job-count-badge {
-                top: 2px;
-                right: 2px;
-                width: 18px;
-                height: 18px;
-                font-size: 10px;
-            }
-
-            .job-indicator {
-                font-size: 10px;
-                color: #D9534F;
-                margin-top: 2px;
-            }
-
-            .job-slot {
-                font-size: 9px;
-                padding: 4px;
-            }
-        }
-
-        .day-detail-modal {
-            display: none;
-            z-index: 1500;
-        }
-
-        .day-detail-modal.show {
-            display: flex;
-            z-index: 1500;
-        }
-
-        .day-detail-content {
-            background: white;
-            border-radius: 8px;
-            max-width: 500px;
-            width: 95%;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-        }
-
-        .day-detail-header {
-            background: #185FA5;
-            color: white;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .day-detail-body {
-            padding: 20px;
-        }
-
-        .slots-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .slot-card {
-            background: #f8f9fa;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            padding: 15px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .slot-card:hover {
-            border-color: #378ADD;
-            background: #e8f4f8;
-        }
-
-        .slot-card.filled {
-            background: #e8f4f8;
-            border-color: #185FA5;
-        }
-
-        .slot-number {
-            font-size: 12px;
-            color: #999;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .slot-card-content {
-            font-size: 13px;
-        }
-
-        .slot-card-customer {
-            font-weight: 600;
-            color: #0C447C;
-            font-size: 14px;
-            margin-bottom: 4px;
-        }
-
-        .slot-card-city {
-            color: #666;
-            font-size: 12px;
-            margin-bottom: 6px;
-        }
-
-        .slot-card-details {
-            color: #333;
-            font-size: 12px;
-            line-height: 1.4;
-        }
-
-        .slot-empty-text {
-            color: #999;
-            text-align: center;
-            padding: 20px;
-            font-style: italic;
         }
     </style>
 </head>
 <body>
+    <!-- Login Screen -->
     <div class="login-screen" id="loginScreen">
         <div class="login-container">
             <h1>Comfy HVAC</h1>
-            <p>Job Board Access</p>
+            <p>Lead Generator Portal</p>
             <div class="login-form">
-                <input type="password" id="passwordInput" placeholder="Enter password" />
-                
-                <div class="role-selector">
-                    <button class="role-btn active" data-role="advisor">Comfort Advisor</button>
-                    <button class="role-btn" data-role="admin">Admin</button>
-                </div>
-
+                <input type="password" id="passwordInput" placeholder="Enter password" onkeypress="if(event.key==='Enter') handleLogin()">
                 <button class="login-btn" onclick="handleLogin()">Login</button>
-                <div id="loginError" class="error-message"></div>
-                <div class="sync-status">
-                    <span class="sync-indicator" id="syncIndicator"></span>
-                    <span id="syncStatus">Initializing Firebase...</span>
-                </div>
+                <div id="loginError" class="login-error"></div>
             </div>
         </div>
     </div>
 
+    <!-- Main App -->
     <div class="app-container" id="appContainer">
         <div class="header">
-            <div class="header-content">
-                <h1>Comfy HVAC - Job Board</h1>
-                <div class="header-info">
-                    <div class="role-badge" id="roleDisplay"></div>
-                    <div class="sync-status" style="margin: 0;">
-                        <span class="sync-indicator" id="syncIndicator2"></span>
-                        <span id="syncStatus2" style="color: white; font-size: 13px;">Syncing...</span>
-                    </div>
-                    <button class="logout-btn" onclick="handleLogout()">Logout</button>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1>Comfy HVAC</h1>
+                    <p>Book Appointments - Real-Time Availability</p>
                 </div>
+                <button onclick="handleLogout()" style="background: #D9534F; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px;">Logout</button>
             </div>
         </div>
 
-        <div class="main-content">
-            <div class="controls">
-                <div class="month-nav">
-                    <button class="nav-btn" onclick="previousMonth()">← Previous</button>
-                    <div class="current-months" id="monthDisplay"></div>
-                    <button class="nav-btn" onclick="nextMonth()">Next →</button>
-                </div>
-            </div>
+        <!-- Service Type Selector -->
+        <div class="info-box">
+            Select service type to see availability
+        </div>
 
-            <div class="calendar-grid" id="calendarGrid"></div>
+        <div class="service-selector">
+            <button class="service-btn active" onclick="selectService('estimate')">
+                📋 Estimate
+            </button>
+            <button class="service-btn" onclick="selectService('repair')">
+                🔧 Repair
+            </button>
+            <button class="service-btn" onclick="selectService('maintenance')">
+                🛠️ Maintenance
+            </button>
+        </div>
+
+        <!-- Calendar Controls -->
+        <div class="calendar-controls">
+            <button class="nav-btn" onclick="previousMonth()">← Prev</button>
+            <div class="month-title" id="monthTitle"></div>
+            <button class="nav-btn" onclick="nextMonth()">Next →</button>
+        </div>
+
+        <!-- Calendar -->
+        <div class="calendar">
+            <div class="calendar-header">
+                <div class="day-name">Sun</div>
+                <div class="day-name">Mon</div>
+                <div class="day-name">Tue</div>
+                <div class="day-name">Wed</div>
+                <div class="day-name">Thu</div>
+                <div class="day-name">Fri</div>
+                <div class="day-name">Sat</div>
+            </div>
+            <div class="calendar-days" id="calendarDays"></div>
+        </div>
+
+        <div style="text-align: center; font-size: 12px; color: #666; margin-top: 15px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+            <div>
+                <span style="display: inline-block; background: #d1ecf1; padding: 6px 12px; border-radius: 4px; border: 2px solid #0c5460; margin-right: 5px;">🔵</span>
+                <span>Estimators (Austin/Pete)</span>
+            </div>
+            <div>
+                <span style="display: inline-block; background: #d4edda; padding: 6px 12px; border-radius: 4px; border: 2px solid #155724; margin-right: 5px;">🟢</span>
+                <span>Technicians (Sergio/Josue)</span>
+            </div>
         </div>
     </div>
+    </div> <!-- Close app-container -->
 
-    <div class="modal" id="jobModal">
+    <!-- Day Detail Modal -->
+    <div class="modal" id="dayModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="modalTitle"></h2>
-                <button class="modal-close" onclick="closeModal()">×</button>
+                <h2 id="dayTitle"></h2>
+                <button class="modal-close" onclick="closeDayModal()">×</button>
             </div>
             <div class="modal-body">
-                <div id="readonlyNotice"></div>
-                <div class="form-group">
-                    <label>Customer Name <span class="required">*</span></label>
-                    <input type="text" id="customerName" placeholder="Customer name">
-                </div>
-                <div class="form-group">
-                    <label>City <span class="required">*</span></label>
-                    <input type="text" id="city" placeholder="City">
-                </div>
-                <div class="form-group">
-                    <label>Job Details <span class="required">*</span></label>
-                    <textarea id="jobDetails" placeholder="Describe the work to be done..."></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Contact Phone</label>
-                    <input type="tel" id="phone" placeholder="Phone number">
-                </div>
-                <div class="form-group">
-                    <label>Address</label>
-                    <input type="text" id="address" placeholder="Job address">
+                <!-- Available Slots -->
+                <div id="slotsSection">
+                    <div class="info-box" id="slotInfo">Select an available time slot</div>
+                    <div class="slots-container" id="slotsContainer"></div>
                 </div>
 
-                <div class="form-actions">
-                    <button class="btn-save" onclick="saveJob()" id="saveBtn">Save Job</button>
-                    <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-                    <button class="btn-delete" onclick="deleteJob()" id="deleteBtn" style="display: none;">Delete</button>
-                </div>
-            </div>
-        </div>
-    </div>
+                <!-- Customer Info Form -->
+                <div id="formSection" style="display: none;">
+                    <div class="booking-summary" id="bookingSummary"></div>
 
-    <div class="modal" id="dayDetailModal">
-        <div class="day-detail-content">
-            <div class="day-detail-header">
-                <h2 id="dayDetailTitle"></h2>
-                <button class="modal-close" onclick="closeDayDetail()">×</button>
-            </div>
-            <div class="day-detail-body">
-                <div class="slots-list" id="dayDetailSlots"></div>
+                    <div class="form-group">
+                        <label>Customer Name <span class="required">*</span></label>
+                        <input type="text" id="customerName" placeholder="John Smith">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Phone Number <span class="required">*</span></label>
+                        <input type="tel" id="customerPhone" placeholder="(555) 123-4567">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email Address <span class="required">*</span></label>
+                        <input type="email" id="customerEmail" placeholder="john@example.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Property Address <span class="required">*</span></label>
+                        <textarea id="customerAddress" placeholder="123 Main St, City, State 12345" rows="2"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <textarea id="customerNotes" placeholder="Any special requests, follow-up info, or notes about the prospect..." rows="3"></textarea>
+                    </div>
+
+                    <div id="bookingMessage"></div>
+
+                    <div class="button-group">
+                        <button class="btn-cancel" onclick="backToSlots()">← Back</button>
+                        <button class="btn-book" onclick="submitBooking()" id="bookBtn">Book Appointment</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // ==================== FIREBASE REST API CONFIG ====================
-        const FIREBASE_CONFIG = {
-            apiKey: "AIzaSyAFWOlIISz2ohMIOvEODIVxKPk5D23q5zs",
-            databaseURL: "https://comfy-job-board-default-rtdb.firebaseio.com",
-            projectId: "comfy-job-board"
-        };
+        // ==================== PASSWORD PROTECTION ====================
+        const LEAD_GEN_PASSWORD = 'leadgen2024'; // Change this to your desired password
 
-        const SLACK_WEBHOOK = "https://hooks.slack.com/services/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";
-
-        // ==================== APP STATE ====================
-        const ADVISOR_PASSWORD = 'comfy2024';  // Comfort Advisor password
-        const ADMIN_PASSWORD = 'admin2024#';   // Admin password (more secure)
-        let currentRole = 'advisor';
-        let currentDate = new Date();
-        let selectedSlot = null;
-        let jobs = {};
-        let syncInterval = null;
-        let isOnline = navigator.onLine;
-
-        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-
-        // ==================== FIREBASE REST API FUNCTIONS ====================
-        async function firebaseFetch(path, options = {}) {
-            const url = `${FIREBASE_CONFIG.databaseURL}/${path}.json`;
-            const method = options.method || 'GET';
-            const body = options.body ? JSON.stringify(options.body) : undefined;
-
-            try {
-                const response = await fetch(url, {
-                    method,
-                    headers: { 'Content-Type': 'application/json' },
-                    body
-                });
-
-                if (!response.ok) {
-                    console.error(`Firebase error: ${response.status} ${response.statusText}`);
-                    return null;
-                }
-
-                return await response.json();
-            } catch (error) {
-                console.error('Firebase fetch error:', error);
-                updateSyncStatus(false, 'Offline - using local data');
-                return null;
-            }
-        }
-
-        async function loadJobsFromFirebase() {
-            const data = await firebaseFetch('jobs');
-            if (data) {
-                jobs = data || {};
-                updateSyncStatus(true, 'Synced');
-                return true;
-            }
-            return false;
-        }
-
-        async function saveJobToFirebase(dateKey, slotIndex, jobData) {
-            const path = `jobs/${dateKey}/${slotIndex}`;
-            const success = await firebaseFetch(path, {
-                method: 'PUT',
-                body: jobData
-            });
-
-            if (success !== null) {
-                updateSyncStatus(true, 'Synced');
-                return true;
-            }
-            return false;
-        }
-
-        async function deleteJobFromFirebase(dateKey, slotIndex) {
-            const path = `jobs/${dateKey}/${slotIndex}`;
-            const response = await fetch(`${FIREBASE_CONFIG.databaseURL}/${path}.json`, {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' }
-            });
-
-            if (response.ok) {
-                updateSyncStatus(true, 'Synced');
-                return true;
-            }
-            return false;
-        }
-
-        // ==================== SLACK INTEGRATION ====================
-        async function postToSlack(jobData, action = 'created') {
-            const payload = {
-                text: `🔔 Job ${action.toUpperCase()}`,
-                blocks: [
-                    {
-                        type: "section",
-                        text: {
-                            type: "mrkdwn",
-                            text: `*Job ${action}* by *${currentRole === 'advisor' ? 'Comfort Advisor' : 'Admin'}*`
-                        }
-                    },
-                    {
-                        type: "section",
-                        fields: [
-                            {
-                                type: "mrkdwn",
-                                text: `*Customer:*\n${jobData.customer}`
-                            },
-                            {
-                                type: "mrkdwn",
-                                text: `*City:*\n${jobData.city}`
-                            },
-                            {
-                                type: "mrkdwn",
-                                text: `*Details:*\n${jobData.jobDetails}`
-                            },
-                            {
-                                type: "mrkdwn",
-                                text: `*Phone:*\n${jobData.phone || 'N/A'}`
-                            }
-                        ]
-                    }
-                ]
-            };
-
-            try {
-                await fetch(SLACK_WEBHOOK, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                console.log('Slack notification sent');
-            } catch (error) {
-                console.error('Slack post error:', error);
-            }
-        }
-
-        // ==================== SYNC STATUS UI ====================
-        function updateSyncStatus(synced, message = '') {
-            const indicator1 = document.getElementById('syncIndicator');
-            const indicator2 = document.getElementById('syncIndicator2');
-            const status1 = document.getElementById('syncStatus');
-            const status2 = document.getElementById('syncStatus2');
-
-            if (synced) {
-                indicator1?.classList.add('synced');
-                indicator2?.classList.add('synced');
-            } else {
-                indicator1?.classList.remove('synced');
-                indicator2?.classList.remove('synced');
-            }
-
-            if (message) {
-                if (status1) status1.textContent = message;
-                if (status2) status2.textContent = message;
-            }
-        }
-
-        // ==================== AUTHENTICATION ====================
-        // Role selection
-        document.querySelectorAll('.role-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                currentRole = this.dataset.role;
-            });
-        });
-
-        async function handleLogin() {
+        function handleLogin() {
             const password = document.getElementById('passwordInput').value;
             const errorDiv = document.getElementById('loginError');
 
@@ -1010,352 +683,421 @@
                 return;
             }
 
-            // Check password based on selected role
-            const correctPassword = currentRole === 'advisor' ? ADVISOR_PASSWORD : ADMIN_PASSWORD;
-            
-            if (password !== correctPassword) {
-                errorDiv.textContent = 'Incorrect password for this role';
+            if (password !== LEAD_GEN_PASSWORD) {
+                errorDiv.textContent = 'Incorrect password';
+                document.getElementById('passwordInput').value = '';
                 return;
             }
 
+            // Login successful
             document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('appContainer').classList.add('show');
-            document.getElementById('roleDisplay').textContent = currentRole === 'advisor' ? 'Comfort Advisor' : 'Admin';
-            
-            // Load jobs and start syncing
-            await loadJobsFromFirebase();
-            render();
-            startRealTimeSync();
+            document.getElementById('appContainer').classList.add('authenticated');
+            initializeApp();
+        }
+
+        function initializeApp() {
+            renderCalendar();
         }
 
         function handleLogout() {
-            document.getElementById('loginScreen').style.display = 'flex';
-            document.getElementById('appContainer').classList.remove('show');
-            document.getElementById('passwordInput').value = '';
-            document.getElementById('loginError').textContent = '';
-            currentDate = new Date();
-            jobs = {};
-            stopRealTimeSync();
-        }
-
-        // ==================== REAL-TIME SYNC ====================
-        function startRealTimeSync() {
-            updateSyncStatus(true, 'Connected');
-            // Sync every 3 seconds
-            syncInterval = setInterval(async () => {
-                await loadJobsFromFirebase();
-                render();
-            }, 3000);
-        }
-
-        function stopRealTimeSync() {
-            if (syncInterval) {
-                clearInterval(syncInterval);
-                syncInterval = null;
+            if (confirm('Are you sure you want to logout?')) {
+                document.getElementById('loginScreen').style.display = 'flex';
+                document.getElementById('appContainer').classList.remove('authenticated');
+                document.getElementById('passwordInput').value = '';
+                document.getElementById('loginError').textContent = '';
+                document.getElementById('passwordInput').focus();
             }
         }
 
-        // ==================== CALENDAR LOGIC ====================
-        function formatDateKey(date) {
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
+        // ==================== HOUSE CALL PRO CONFIG ====================
+        const HCP_CONFIG = {
+            apiKey: '', // User will add this
+            baseUrl: 'https://api.housecallpro.com/v2'
+        };
+
+        // Staff Information
+        const STAFF = {
+            estimate: ['austin', 'pete'],
+            repair: ['sergio', 'josue'],
+            maintenance: ['sergio', 'josue']
+        };
+
+        const STAFF_NAMES = {
+            austin: 'Austin Vieira',
+            pete: 'Pete Fletcher',
+            sergio: 'Sergio Valadez',
+            josue: 'Josue Burgos'
+        };
+
+        // Time Slots (2-hour appointments)
+        const TIME_SLOTS = [
+            '8:30 AM',
+            '10:00 AM',
+            '11:30 AM',
+            '2:00 PM',
+            '3:30 PM'
+        ];
+
+        // State
+        let currentService = 'estimate';
+        let currentDate = new Date();
+        let selectedDay = null;
+        let selectedSlot = null;
+        let availabilityCache = {};
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // App will initialize after successful login
+            // Focus on password input
+            document.getElementById('passwordInput').focus();
+        });
+
+        function selectService(service) {
+            currentService = service;
+            document.querySelectorAll('.service-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            renderCalendar();
         }
 
-        function getDaysInMonth(date) {
-            return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-        }
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
 
-        function getFirstDayOfMonth(date) {
-            return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-        }
+            // Update title
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            document.getElementById('monthTitle').textContent = `${monthNames[month]} ${year}`;
 
-        function isMobile() {
-            return window.innerWidth <= 768;
-        }
+            // Get first day of month and number of days
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const daysInPrevMonth = new Date(year, month, 0).getDate();
 
-        function renderMonth(monthDate, containerId) {
-            const daysInMonth = getDaysInMonth(monthDate);
-            const firstDay = getFirstDayOfMonth(monthDate);
-            const monthYear = monthNames[monthDate.getMonth()] + ' ' + monthDate.getFullYear();
-            const mobile = isMobile();
+            let html = '';
 
-            let html = `<div class="month-card">
-                <div class="month-title">${monthYear}</div>
-                <div class="days-grid">`;
-
-            // Day headers
-            dayNames.forEach(day => {
-                html += `<div class="day-header">${day.slice(0, 3)}</div>`;
-            });
-
-            // Empty cells before first day
-            for (let i = 0; i < firstDay; i++) {
-                html += `<div class="day-cell" style="background: #f0f0f0;"></div>`;
+            // Previous month days
+            for (let i = firstDay - 1; i >= 0; i--) {
+                const day = daysInPrevMonth - i;
+                html += `<div class="calendar-day other-month">${day}</div>`;
             }
 
-            // Days of month
+            // Current month days
             for (let day = 1; day <= daysInMonth; day++) {
-                const date = new Date(monthDate.getFullYear(), monthDate.getMonth(), day);
-                const dateKey = formatDateKey(date);
-                const dayJobs = jobs[dateKey] || [{}, {}, {}, {}];
-                
-                // Count filled jobs
-                const jobCount = Object.values(dayJobs).filter(j => j && j.customer).length;
-                const hasJobs = jobCount > 0;
+                const date = new Date(year, month, day);
+                const dateStr = date.toISOString().split('T')[0];
+                const dayOfWeek = date.getDay();
 
-                if (mobile) {
-                    // Mobile: Compact day view with click to see slots
-                    html += `<div class="day-cell ${hasJobs ? 'has-jobs' : ''}" onclick="openDayDetail('${dateKey}', ${day})">
-                        <div class="day-number">${day}</div>
-                        ${hasJobs ? `<div class="job-indicator">●●●</div>` : ''}
-                    </div>`;
+                // Skip Sundays
+                let cssClass = 'calendar-day';
+                let indicatorText = '';
+
+                if (dayOfWeek === 0) {
+                    cssClass += ' other-month';
+                    indicatorText = 'Closed';
+                } else if (date < new Date()) {
+                    cssClass += ' other-month';
+                    indicatorText = 'Past';
                 } else {
-                    // Desktop: Show all slots in day cell
-                    html += `<div class="day-cell">
-                        <div class="day-number">${day}</div>
-                        ${hasJobs ? `<div class="job-count-badge">${jobCount}</div>` : ''}
-                        <div class="slots-container">`;
-
-                    for (let slot = 0; slot < 4; slot++) {
-                        const job = dayJobs[slot] || {};
-                        if (job.customer) {
-                            html += `<div class="job-slot filled" onclick="openJobModal('${dateKey}', ${slot})" title="Click to view/edit">
-                                <div class="slot-content">
-                                    <div class="job-customer">${job.customer}</div>
-                                    <div class="job-city">${job.city}</div>
-                                    <div class="job-details">${job.jobDetails.substring(0, 30)}...</div>
-                                </div>
-                            </div>`;
-                        } else {
-                            html += `<div class="job-slot" onclick="openJobModal('${dateKey}', ${slot})" title="Click to add job">
-                                <div class="slot-label">Slot ${slot + 1}</div>
-                            </div>`;
-                        }
+                    // Color code based on service type
+                    if (currentService === 'estimate') {
+                        cssClass += ' estimator-available';
+                        indicatorText = '✓ Available (Austin/Pete)';
+                    } else {
+                        // repair or maintenance
+                        cssClass += ' technician-available';
+                        indicatorText = '✓ Available (Sergio/Josue)';
                     }
-
-                    html += `</div></div>`;
                 }
+
+                html += `
+                    <div class="${cssClass}" onclick="${dayOfWeek !== 0 && date >= new Date() ? `openDayModal('${dateStr}', ${day})` : ''}">
+                        <div class="day-number">${day}</div>
+                        <div class="availability-indicator ${indicatorText.includes('✓') ? 'available' : 'booked'}">${indicatorText}</div>
+                    </div>
+                `;
             }
 
-            // Empty cells after last day
+            // Next month days
             const totalCells = firstDay + daysInMonth;
             const remainingCells = (Math.ceil(totalCells / 7) * 7) - totalCells;
-            for (let i = 0; i < remainingCells; i++) {
-                html += `<div class="day-cell" style="background: #f0f0f0;"></div>`;
+            for (let i = 1; i <= remainingCells; i++) {
+                html += `<div class="calendar-day other-month">${i}</div>`;
             }
 
-            html += `</div></div>`;
-            document.getElementById(containerId).innerHTML = html;
+            document.getElementById('calendarDays').innerHTML = html;
         }
 
-        function render() {
-            const month1 = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-            const month2 = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+        async function checkDayAvailability(dateStr) {
+            // This would call House Call Pro API to check availability for this day
+            // For now, we'll load it when the day is clicked
+            if (!availabilityCache[dateStr]) {
+                availabilityCache[dateStr] = await getAvailableSlotsForDay(dateStr);
+            }
+        }
 
-            document.getElementById('monthDisplay').textContent = 
-                monthNames[month1.getMonth()] + ' & ' + monthNames[month2.getMonth()] + ' ' + month1.getFullYear();
+        async function getAvailableSlotsForDay(dateStr) {
+            try {
+                if (!HCP_CONFIG.apiKey) {
+                    // No API key configured - return all slots as available
+                    return TIME_SLOTS.map(slot => ({time: slot, available: true}));
+                }
 
-            let html = `<div id="month1"></div><div id="month2"></div>`;
-            document.getElementById('calendarGrid').innerHTML = html;
+                const staff = STAFF[currentService] || [];
+                const staffIds = staff.join(',');
 
-            renderMonth(month1, 'month1');
-            renderMonth(month2, 'month2');
+                // Call House Call Pro API to get booked appointments
+                const response = await fetch(
+                    `${HCP_CONFIG.baseUrl}/appointments?date=${dateStr}&staff_ids=${staffIds}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${HCP_CONFIG.apiKey}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+
+                if (!response.ok) {
+                    console.warn('Failed to fetch appointments');
+                    return TIME_SLOTS.map(slot => ({time: slot, available: true}));
+                }
+
+                const data = await response.json();
+                const booked = new Set();
+
+                if (data.data && Array.isArray(data.data)) {
+                    data.data.forEach(apt => {
+                        const aptTime = convertHCPTimeToSlot(apt.scheduled_time || apt.time);
+                        if (aptTime) booked.add(aptTime);
+                    });
+                }
+
+                return TIME_SLOTS.map(slot => ({
+                    time: slot,
+                    available: !booked.has(slot)
+                }));
+
+            } catch (error) {
+                console.error('Error fetching slots:', error);
+                return TIME_SLOTS.map(slot => ({time: slot, available: true}));
+            }
+        }
+
+        function convertHCPTimeToSlot(hcpTime) {
+            if (!hcpTime) return null;
+            try {
+                // Handle various time formats
+                const time = new Date(`2000-01-01 ${hcpTime}`);
+                return time.toLocaleTimeString('en-US', { 
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                });
+            } catch (e) {
+                return null;
+            }
+        }
+
+        // Function to calculate day of week without Date object timezone issues
+        function getDayOfWeek(year, month, day) {
+            // Zeller's congruence - works consistently across all platforms
+            if (month < 3) {
+                month += 12;
+                year -= 1;
+            }
+            const K = year % 100;
+            const J = Math.floor(year / 100);
+            const h = (day + Math.floor(13 * (month + 1) / 5) + K + Math.floor(K / 4) + Math.floor(J / 4) - 2 * J) % 7;
+            // Convert to 0=Sunday, 1=Monday, etc.
+            return (h + 6) % 7;
+        }
+
+        async function openDayModal(dateStr, dayNum) {
+            selectedDay = dateStr;
+            selectedSlot = null;
+
+            // Parse date string to get year, month, day
+            const [year, month, day] = dateStr.split('-').map(Number);
+            
+            const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+            // Use Zeller's algorithm for day of week (works on mobile Safari)
+            const dayOfWeek = getDayOfWeek(year, month, day);
+
+            document.getElementById('dayTitle').textContent = `${dayNames[dayOfWeek]}, ${monthNames[month - 1]} ${dayNum}`;
+
+            // Show which staff is handling this
+            const staffList = currentService === 'estimate' ? 'Austin Vieira or Pete Fletcher' : 'Sergio Valadez or Josue Burgos';
+            const serviceType = currentService === 'estimate' ? 'Installation Estimate' :
+                               currentService === 'repair' ? 'Repair' : 'Maintenance/Tune-up';
+            document.getElementById('slotInfo').innerHTML = `
+                <strong>${serviceType}</strong> - Available with ${staffList}
+            `;
+
+            // Load slots
+            let slots = availabilityCache[dateStr];
+            if (!slots) {
+                slots = await getAvailableSlotsForDay(dateStr);
+                availabilityCache[dateStr] = slots;
+            }
+
+            // Render slots
+            let slotsHTML = '';
+            slots.forEach(slot => {
+                const cssClass = slot.available ? '' : 'disabled';
+                slotsHTML += `
+                    <div class="time-slot ${cssClass}" onclick="${slot.available ? `selectSlot('${slot.time}', this)` : ''}">
+                        ${slot.time}
+                    </div>
+                `;
+            });
+
+            document.getElementById('slotsContainer').innerHTML = slotsHTML;
+            document.getElementById('slotsSection').style.display = 'block';
+            document.getElementById('formSection').style.display = 'none';
+
+            document.getElementById('dayModal').classList.add('show');
+        }
+
+        function closeDayModal() {
+            document.getElementById('dayModal').classList.remove('show');
+            selectedDay = null;
+            selectedSlot = null;
+        }
+
+        function selectSlot(slot, element) {
+            document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+            element.classList.add('selected');
+            selectedSlot = slot;
+
+            // Show form after short delay
+            setTimeout(() => {
+                showCustomerForm();
+            }, 300);
+        }
+
+        function showCustomerForm() {
+            // Parse date string to get year, month, day
+            const [year, month, day] = selectedDay.split('-').map(Number);
+            
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            const dateStr = `${monthNames[month - 1]} ${day}, ${year}`;
+
+            const serviceType = currentService === 'estimate' ? 'Installation Estimate' :
+                               currentService === 'repair' ? 'Repair' : 'Maintenance/Tune-up';
+
+            const staffList = currentService === 'estimate' ? 'Austin Vieira or Pete Fletcher' : 'Sergio Valadez or Josue Burgos';
+
+            document.getElementById('bookingSummary').innerHTML = `
+                <strong>Service:</strong> ${serviceType}<br>
+                <strong>Date & Time:</strong> ${dateStr} at ${selectedSlot}<br>
+                <strong>Staff:</strong> ${staffList}
+            `;
+
+            document.getElementById('slotsSection').style.display = 'none';
+            document.getElementById('formSection').style.display = 'block';
+
+            // Clear form
+            document.getElementById('customerName').value = '';
+            document.getElementById('customerPhone').value = '';
+            document.getElementById('customerEmail').value = '';
+            document.getElementById('customerAddress').value = '';
+            document.getElementById('customerNotes').value = '';
+            document.getElementById('bookingMessage').innerHTML = '';
+        }
+
+        function backToSlots() {
+            document.getElementById('slotsSection').style.display = 'block';
+            document.getElementById('formSection').style.display = 'none';
+            document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+            selectedSlot = null;
+        }
+
+        async function submitBooking() {
+            const name = document.getElementById('customerName').value.trim();
+            const phone = document.getElementById('customerPhone').value.trim();
+            const email = document.getElementById('customerEmail').value.trim();
+            const address = document.getElementById('customerAddress').value.trim();
+            const notes = document.getElementById('customerNotes').value.trim();
+
+            if (!name || !phone || !email || !address) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            const messageDiv = document.getElementById('bookingMessage');
+            const bookBtn = document.getElementById('bookBtn');
+
+            bookBtn.disabled = true;
+            bookBtn.textContent = 'Booking...';
+            messageDiv.innerHTML = '<div class="loading"><div class="spinner"></div>Creating appointment...</div>';
+
+            try {
+                if (!HCP_CONFIG.apiKey) {
+                    throw new Error('House Call Pro API key not configured');
+                }
+
+                const appointmentData = {
+                    customer_name: name,
+                    customer_phone: phone,
+                    customer_email: email,
+                    address: address,
+                    service_type: currentService,
+                    scheduled_time: `${selectedDay}T${convertSlotToTime(selectedSlot)}`,
+                    notes: `Booked by Lead Generator at Home Depot${notes ? '\n\nProspect Notes: ' + notes : ''}`
+                };
+
+                const response = await fetch(`${HCP_CONFIG.baseUrl}/appointments`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${HCP_CONFIG.apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(appointmentData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to create appointment');
+                }
+
+                messageDiv.innerHTML = `
+                    <div class="success-message">
+                        ✓ Appointment booked!<br>
+                        Customer will receive SMS confirmation at ${phone}
+                    </div>
+                `;
+
+                setTimeout(() => {
+                    closeDayModal();
+                    renderCalendar();
+                    alert('Appointment booked successfully!');
+                }, 2000);
+
+            } catch (error) {
+                messageDiv.innerHTML = `<div class="error-message">Error: ${error.message}</div>`;
+                bookBtn.disabled = false;
+                bookBtn.textContent = 'Book Appointment';
+            }
+        }
+
+        function convertSlotToTime(slot) {
+            try {
+                const time = new Date(`2000-01-01 ${slot}`);
+                return time.toTimeString().split(' ')[0]; // Returns HH:MM:SS
+            } catch (e) {
+                return '08:00:00';
+            }
         }
 
         function previousMonth() {
             currentDate.setMonth(currentDate.getMonth() - 1);
-            render();
+            renderCalendar();
         }
 
         function nextMonth() {
             currentDate.setMonth(currentDate.getMonth() + 1);
-            render();
+            renderCalendar();
         }
-
-        // ==================== JOB MODAL ====================
-        function openJobModal(dateKey, slotIndex) {
-            // Force close day detail modal completely
-            const dayDetailModal = document.getElementById('dayDetailModal');
-            dayDetailModal.classList.remove('show');
-            dayDetailModal.style.display = 'none';
-            
-            selectedSlot = { dateKey, slotIndex };
-            const dayJobs = jobs[dateKey] || [{}, {}, {}, {}];
-            const job = dayJobs[slotIndex] || {};
-            const isEditing = !!job.customer;
-
-            // Set form title
-            document.getElementById('modalTitle').textContent = isEditing ? 'Edit Job' : 'Add New Job';
-
-            // Check if advisor and editing (readonly mode)
-            const isReadonly = currentRole === 'advisor' && isEditing;
-
-            if (isReadonly) {
-                document.getElementById('readonlyNotice').innerHTML = 
-                    '<div class="readonly-notice">📋 You can view this job but cannot edit it. Only admins can modify existing jobs.</div>';
-            } else {
-                document.getElementById('readonlyNotice').innerHTML = '';
-            }
-
-            // Fill form
-            document.getElementById('customerName').value = job.customer || '';
-            document.getElementById('city').value = job.city || '';
-            document.getElementById('jobDetails').value = job.jobDetails || '';
-            document.getElementById('phone').value = job.phone || '';
-            document.getElementById('address').value = job.address || '';
-
-            // Set form readonly state
-            const inputs = ['customerName', 'city', 'jobDetails', 'phone', 'address'];
-            inputs.forEach(id => {
-                document.getElementById(id).readOnly = isReadonly;
-            });
-
-            // Show/hide buttons
-            document.getElementById('saveBtn').style.display = isReadonly ? 'none' : 'block';
-            document.getElementById('deleteBtn').style.display = (isEditing && currentRole === 'admin') ? 'block' : 'none';
-
-            document.getElementById('jobModal').classList.add('show');
-        }
-
-        function closeModal() {
-            document.getElementById('jobModal').classList.remove('show');
-            selectedSlot = null;
-        }
-
-        async function saveJob() {
-            const customerName = document.getElementById('customerName').value.trim();
-            const city = document.getElementById('city').value.trim();
-            const jobDetails = document.getElementById('jobDetails').value.trim();
-
-            if (!customerName || !city || !jobDetails) {
-                alert('Please fill in all required fields: Customer Name, City, and Job Details');
-                return;
-            }
-
-            const jobData = {
-                customer: customerName,
-                city: city,
-                jobDetails: jobDetails,
-                phone: document.getElementById('phone').value.trim(),
-                address: document.getElementById('address').value.trim(),
-                createdBy: currentRole,
-                createdDate: new Date().toISOString()
-            };
-
-            // Ensure date structure exists
-            if (!jobs[selectedSlot.dateKey]) {
-                jobs[selectedSlot.dateKey] = {};
-            }
-
-            // Save to Firebase
-            const success = await saveJobToFirebase(selectedSlot.dateKey, selectedSlot.slotIndex, jobData);
-            
-            if (success) {
-                jobs[selectedSlot.dateKey][selectedSlot.slotIndex] = jobData;
-                
-                // Post to Slack
-                await postToSlack(jobData, 'created');
-                
-                render();
-                closeModal();
-            } else {
-                alert('Failed to save job. Please check your connection.');
-            }
-        }
-
-        async function deleteJob() {
-            if (currentRole !== 'admin') {
-                alert('Only admins can delete jobs');
-                return;
-            }
-
-            if (confirm('Are you sure you want to delete this job?')) {
-                const success = await deleteJobFromFirebase(selectedSlot.dateKey, selectedSlot.slotIndex);
-                
-                if (success) {
-                    jobs[selectedSlot.dateKey][selectedSlot.slotIndex] = {};
-                    render();
-                    closeModal();
-                } else {
-                    alert('Failed to delete job. Please check your connection.');
-                }
-            }
-        }
-
-        // ==================== DAY DETAIL MODAL ====================
-        function openDayDetail(dateKey, dayNum) {
-            const dayJobs = jobs[dateKey] || [{}, {}, {}, {}];
-            const date = new Date(dateKey);
-            const dayName = dayNames[date.getDay()];
-
-            document.getElementById('dayDetailTitle').textContent = `${dayName}, ${monthNames[date.getMonth()]} ${dayNum}`;
-
-            let html = '';
-            let hasAnyJobs = false;
-
-            for (let slot = 0; slot < 4; slot++) {
-                const job = dayJobs[slot] || {};
-                if (job.customer) {
-                    hasAnyJobs = true;
-                    html += `<div class="slot-card filled" onclick="openJobModal('${dateKey}', ${slot})">
-                        <div class="slot-number">Slot ${slot + 1}</div>
-                        <div class="slot-card-content">
-                            <div class="slot-card-customer">${job.customer}</div>
-                            <div class="slot-card-city">${job.city}</div>
-                            <div class="slot-card-details">${job.jobDetails}</div>
-                            ${job.phone ? `<div style="margin-top: 6px; color: #666; font-size: 11px;">📞 ${job.phone}</div>` : ''}
-                            ${job.address ? `<div style="margin-top: 4px; color: #666; font-size: 11px;">📍 ${job.address}</div>` : ''}
-                        </div>
-                    </div>`;
-                } else {
-                    html += `<div class="slot-card" onclick="openJobModal('${dateKey}', ${slot})">
-                        <div class="slot-number">Slot ${slot + 1}</div>
-                        <div class="slot-empty-text">Click to add job</div>
-                    </div>`;
-                }
-            }
-
-            document.getElementById('dayDetailSlots').innerHTML = html;
-            document.getElementById('dayDetailModal').classList.add('show');
-        }
-
-        function closeDayDetail() {
-            document.getElementById('dayDetailModal').classList.remove('show');
-        }
-
-        // ==================== MODAL BACKDROP CLOSE ====================
-        document.getElementById('jobModal').addEventListener('click', function(e) {
-            if (e.target === this) closeModal();
-        });
-
-        document.getElementById('dayDetailModal').addEventListener('click', function(e) {
-            if (e.target === this) closeDayDetail();
-        });
-
-        // ==================== WINDOW EVENTS ====================
-        let resizeTimeout;
-        window.addEventListener('resize', function() {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(function() {
-                render();
-            }, 250);
-        });
-
-        // Track online/offline status
-        window.addEventListener('online', () => {
-            isOnline = true;
-            updateSyncStatus(true, 'Connected');
-        });
-
-        window.addEventListener('offline', () => {
-            isOnline = false;
-            updateSyncStatus(false, 'Offline');
-        });
-
-        // Initialize Firebase status check
-        updateSyncStatus(true, 'Firebase Ready');
     </script>
 </body>
 </html>
