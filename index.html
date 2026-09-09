@@ -1302,10 +1302,15 @@
         // ==================== DAY DETAIL MODAL ====================
         function openDayDetail(dateKey, dayNum) {
             const dayJobs = jobs[dateKey] || [{}, {}, {}, {}];
-            const date = new Date(dateKey);
-            const dayName = dayNames[date.getDay()];
+            
+            // Parse date string to get year, month, day
+            const [year, month, day] = dateKey.split('-').map(Number);
+            
+            // Use getDayOfWeek function instead of Date object (works on all platforms including mobile)
+            const dayOfWeek = getDayOfWeek(year, month, day);
+            const dayName = dayNames[dayOfWeek];
 
-            document.getElementById('dayDetailTitle').textContent = `${dayName}, ${monthNames[date.getMonth()]} ${dayNum}`;
+            document.getElementById('dayDetailTitle').textContent = `${dayName}, ${monthNames[month - 1]} ${dayNum}`;
 
             let html = '';
             let hasAnyJobs = false;
