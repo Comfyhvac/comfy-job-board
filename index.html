@@ -2,19 +2,35 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
     <title>Comfy HVAC - Job Board</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
             background: #f8f9fa;
             color: #333;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        input, textarea, select {
+            -webkit-user-select: text;
+            user-select: text;
         }
 
         .login-screen {
@@ -87,6 +103,8 @@
             font-size: 14px;
             font-weight: 600;
             transition: all 0.3s;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         .role-btn.active {
@@ -105,9 +123,11 @@
             font-weight: 600;
             cursor: pointer;
             transition: background 0.3s;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
-        .login-btn:hover {
+        .login-btn:active {
             background: #c9423f;
         }
 
@@ -117,41 +137,180 @@
             margin-top: 10px;
         }
 
-        .sync-status {
-            font-size: 12px;
-            color: #666;
-            margin-top: 10px;
+        .modal {
+            display: none !important;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none !important;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .modal.show {
+            display: flex !important;
+            pointer-events: auto !important;
+        }
+
+        .modal.show .modal-content {
+            pointer-events: auto !important;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            pointer-events: auto !important;
+            -webkit-user-select: text;
+            user-select: text;
+        }
+
+        .modal-header {
+            background: #0C447C;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            -webkit-user-select: none;
+            user-select: none;
+            padding: 0;
+            width: 36px;
+            height: 36px;
             display: flex;
             align-items: center;
-            gap: 6px;
+            justify-content: center;
         }
 
-        .sync-indicator {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
+        .modal-body {
+            padding: 20px;
+            -webkit-user-select: text;
+            user-select: text;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #0C447C;
+            font-size: 14px;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            font-family: inherit;
+            -webkit-user-select: text;
+            user-select: text;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #378ADD;
+            box-shadow: 0 0 0 2px rgba(55, 138, 221, 0.1);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-save, .btn-cancel, .btn-delete {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .btn-save {
+            background: #185FA5;
+            color: white;
+        }
+
+        .btn-save:active {
+            background: #0C447C;
+        }
+
+        .btn-cancel {
             background: #ddd;
-            animation: pulse 2s infinite;
+            color: #333;
         }
 
-        .sync-indicator.synced {
-            background: #28a745;
-            animation: none;
+        .btn-cancel:active {
+            background: #ccc;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 0.6; }
-            50% { opacity: 1; }
+        .btn-delete {
+            background: #D9534F;
+            color: white;
+        }
+
+        .btn-delete:active {
+            background: #c9423f;
+        }
+
+        .readonly-notice {
+            background: #fffbea;
+            border-left: 4px solid #D9534F;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            color: #333;
+            font-size: 13px;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         .app-container {
             display: none;
-            min-height: 100vh;
-            flex-direction: column;
         }
 
         .app-container.show {
-            display: flex;
+            display: block;
         }
 
         .header {
@@ -174,20 +333,8 @@
         .header h1 {
             font-size: 24px;
             margin: 0;
-        }
-
-        .header-info {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-            font-size: 14px;
-        }
-
-        .role-badge {
-            background: rgba(255,255,255,0.2);
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-weight: 600;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         .logout-btn {
@@ -199,14 +346,17 @@
             cursor: pointer;
             font-weight: 600;
             transition: background 0.3s;
+            -webkit-appearance: none;
+            appearance: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
-        .logout-btn:hover {
+        .logout-btn:active {
             background: #c9423f;
         }
 
         .main-content {
-            flex: 1;
             padding: 20px;
             max-width: 1400px;
             margin: 0 auto;
@@ -237,16 +387,14 @@
             cursor: pointer;
             font-weight: 600;
             transition: background 0.3s;
+            -webkit-appearance: none;
+            appearance: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
-        .nav-btn:hover {
+        .nav-btn:active {
             background: #185FA5;
-        }
-
-        .current-months {
-            font-weight: 600;
-            color: #0C447C;
-            min-width: 200px;
         }
 
         .calendar-grid {
@@ -276,6 +424,8 @@
             font-size: 18px;
             font-weight: 600;
             text-align: center;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         .days-grid {
@@ -291,6 +441,8 @@
             font-size: 12px;
             font-weight: 600;
             border-bottom: 1px solid #ddd;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         .day-cell {
@@ -301,6 +453,9 @@
             display: flex;
             flex-direction: column;
             position: relative;
+            cursor: pointer;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         .day-cell:nth-child(7n) {
@@ -312,6 +467,8 @@
             font-size: 12px;
             color: #0C447C;
             margin-bottom: 4px;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         .job-count-badge {
@@ -328,6 +485,9 @@
             justify-content: center;
             font-size: 11px;
             font-weight: 600;
+            pointer-events: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         .slots-container {
@@ -350,9 +510,12 @@
             flex-direction: column;
             justify-content: center;
             overflow: hidden;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .job-slot:hover {
+        .job-slot:active {
             background: #e8f4f8;
             border-color: #378ADD;
         }
@@ -364,253 +527,51 @@
 
         .slot-content {
             line-height: 1.3;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         .slot-label {
             color: #999;
             font-style: italic;
             text-align: center;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         .job-customer {
             font-weight: 600;
             color: #0C447C;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         .job-city {
             color: #666;
             font-size: 10px;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         .job-details {
             color: #333;
             font-size: 10px;
             margin-top: 2px;
-        }
-
-        /* Mobile calendar view */
-        .day-cell.mobile-compact {
-            min-height: 50px;
-            padding: 8px 4px;
-            cursor: pointer;
-            text-align: center;
-        }
-
-        .day-cell.mobile-compact .slots-container {
-            display: none;
-        }
-
-        .day-cell.mobile-compact .day-number {
-            margin-bottom: 0;
-            font-size: 14px;
-        }
-
-        .day-cell.mobile-compact:hover {
-            background: #e8f4f8;
-        }
-
-        .day-cell.mobile-compact.has-jobs .day-number {
-            color: #D9534F;
-            font-weight: bold;
-        }
-
-        .day-cell.mobile-compact .job-indicator {
-            font-size: 10px;
-            color: #D9534F;
-            margin-top: 2px;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 2000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal.show {
-            display: flex;
-        }
-
-        #jobModal {
-            z-index: 3000;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 8px;
-            max-width: 500px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-        }
-
-        .modal-header {
-            background: #0C447C;
-            color: white;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-        }
-
-        .modal-body {
-            padding: 20px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: #0C447C;
-            font-size: 14px;
-        }
-
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-            font-family: inherit;
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .form-group input:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #378ADD;
-            box-shadow: 0 0 0 2px rgba(55, 138, 221, 0.1);
-        }
-
-        .form-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .btn-save {
-            flex: 1;
-            padding: 12px;
-            background: #185FA5;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background 0.3s;
-        }
-
-        .btn-save:hover {
-            background: #0C447C;
-        }
-
-        .btn-cancel {
-            flex: 1;
-            padding: 12px;
-            background: #ddd;
-            color: #333;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background 0.3s;
-        }
-
-        .btn-cancel:hover {
-            background: #ccc;
-        }
-
-        .btn-delete {
-            flex: 1;
-            padding: 12px;
-            background: #D9534F;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background 0.3s;
-        }
-
-        .btn-delete:hover {
-            background: #c9423f;
-        }
-
-        .readonly-notice {
-            background: #fffbea;
-            border-left: 4px solid #D9534F;
-            padding: 12px;
-            margin-bottom: 15px;
-            border-radius: 4px;
-            color: #333;
-            font-size: 13px;
-        }
-
-        .required {
-            color: #D9534F;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .header-info {
-                flex-direction: column;
-                gap: 10px;
-                width: 100%;
-            }
-
-            .controls {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .month-nav {
-                justify-content: space-between;
-            }
-
-            .current-months {
-                min-width: auto;
-            }
-
             .day-cell {
                 min-height: 50px;
-                font-size: 10px;
                 padding: 8px 4px;
-                text-align: center;
             }
 
             .day-cell .slots-container {
                 display: none;
             }
 
-            .day-cell .day-number {
+            .day-number {
                 font-size: 14px;
                 margin-bottom: 2px;
             }
@@ -627,110 +588,6 @@
                 height: 18px;
                 font-size: 10px;
             }
-
-            .job-indicator {
-                font-size: 10px;
-                color: #D9534F;
-                margin-top: 2px;
-            }
-
-            .job-slot {
-                font-size: 9px;
-                padding: 4px;
-            }
-        }
-
-        .day-detail-modal {
-            display: none;
-            z-index: 1500;
-        }
-
-        .day-detail-modal.show {
-            display: flex;
-            z-index: 1500;
-        }
-
-        .day-detail-content {
-            background: white;
-            border-radius: 8px;
-            max-width: 500px;
-            width: 95%;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-        }
-
-        .day-detail-header {
-            background: #185FA5;
-            color: white;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .day-detail-body {
-            padding: 20px;
-        }
-
-        .slots-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .slot-card {
-            background: #f8f9fa;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            padding: 15px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .slot-card:hover {
-            border-color: #378ADD;
-            background: #e8f4f8;
-        }
-
-        .slot-card.filled {
-            background: #e8f4f8;
-            border-color: #185FA5;
-        }
-
-        .slot-number {
-            font-size: 12px;
-            color: #999;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .slot-card-content {
-            font-size: 13px;
-        }
-
-        .slot-card-customer {
-            font-weight: 600;
-            color: #0C447C;
-            font-size: 14px;
-            margin-bottom: 4px;
-        }
-
-        .slot-card-city {
-            color: #666;
-            font-size: 12px;
-            margin-bottom: 6px;
-        }
-
-        .slot-card-details {
-            color: #333;
-            font-size: 12px;
-            line-height: 1.4;
-        }
-
-        .slot-empty-text {
-            color: #999;
-            text-align: center;
-            padding: 20px;
-            font-style: italic;
         }
     </style>
 </head>
@@ -749,10 +606,6 @@
 
                 <button class="login-btn" onclick="handleLogin()">Login</button>
                 <div id="loginError" class="error-message"></div>
-                <div class="sync-status">
-                    <span class="sync-indicator" id="syncIndicator"></span>
-                    <span id="syncStatus">Initializing Firebase...</span>
-                </div>
             </div>
         </div>
     </div>
@@ -761,12 +614,8 @@
         <div class="header">
             <div class="header-content">
                 <h1>Comfy HVAC - Job Board</h1>
-                <div class="header-info">
-                    <div class="role-badge" id="roleDisplay"></div>
-                    <div class="sync-status" style="margin: 0;">
-                        <span class="sync-indicator" id="syncIndicator2"></span>
-                        <span id="syncStatus2" style="color: white; font-size: 13px;">Syncing...</span>
-                    </div>
+                <div>
+                    <span id="roleDisplay" style="margin-right: 20px; font-weight: 600;"></span>
                     <button class="logout-btn" onclick="handleLogout()">Logout</button>
                 </div>
             </div>
@@ -776,7 +625,7 @@
             <div class="controls">
                 <div class="month-nav">
                     <button class="nav-btn" onclick="previousMonth()">← Previous</button>
-                    <div class="current-months" id="monthDisplay"></div>
+                    <div style="font-weight: 600; color: #0C447C; min-width: 200px;" id="monthDisplay"></div>
                     <button class="nav-btn" onclick="nextMonth()">Next →</button>
                 </div>
             </div>
@@ -788,34 +637,26 @@
     <div class="modal" id="jobModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="modalTitle"></h2>
-                <button class="modal-close" onclick="closeModal()">×</button>
+                <h2 id="modalTitle" style="flex: 1; margin: 0;"></h2>
+                <button class="modal-close" onclick="closeModal()">✕</button>
             </div>
             <div class="modal-body">
                 <div id="readonlyNotice"></div>
                 <div class="form-group">
-                    <label>Customer Name <span class="required">*</span></label>
+                    <label>Customer Name <span style="color: #D9534F;">*</span></label>
                     <input type="text" id="customerName" placeholder="Customer name">
                 </div>
                 <div class="form-group">
-                    <label>City <span class="required">*</span></label>
+                    <label>City <span style="color: #D9534F;">*</span></label>
                     <input type="text" id="city" placeholder="City">
                 </div>
                 <div class="form-group">
-                    <label>Job Details <span class="required">*</span></label>
+                    <label>Job Details <span style="color: #D9534F;">*</span></label>
                     <textarea id="jobDetails" placeholder="Describe the work to be done..."></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Contact Phone</label>
-                    <input type="tel" id="phone" placeholder="Phone number">
-                </div>
-                <div class="form-group">
-                    <label>Address</label>
-                    <input type="text" id="address" placeholder="Job address">
                 </div>
 
                 <div class="form-actions">
-                    <button class="btn-save" onclick="saveJob()" id="saveBtn">Save Job</button>
+                    <button class="btn-save" onclick="saveJob()" id="saveBtn">Save</button>
                     <button class="btn-cancel" onclick="closeModal()">Cancel</button>
                     <button class="btn-delete" onclick="deleteJob()" id="deleteBtn" style="display: none;">Delete</button>
                 </div>
@@ -823,191 +664,18 @@
         </div>
     </div>
 
-    <div class="modal" id="dayDetailModal">
-        <div class="day-detail-content">
-            <div class="day-detail-header">
-                <h2 id="dayDetailTitle"></h2>
-                <button class="modal-close" onclick="closeDayDetail()">×</button>
-            </div>
-            <div class="day-detail-body">
-                <div class="slots-list" id="dayDetailSlots"></div>
-            </div>
-        </div>
-    </div>
-
     <script>
-        // ==================== FIREBASE REST API CONFIG ====================
-        const FIREBASE_CONFIG = {
-            apiKey: "AIzaSyAFWOlIISz2ohMIOvEODIVxKPk5D23q5zs",
-            databaseURL: "https://comfy-job-board-default-rtdb.firebaseio.com",
-            projectId: "comfy-job-board"
-        };
-
-        const SLACK_WEBHOOK = "https://hooks.slack.com/services/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";
-
-        // ==================== APP STATE ====================
-        const ADVISOR_PASSWORD = 'comfy2024';  // Comfort Advisor password
-        const ADMIN_PASSWORD = 'admin2024#';   // Admin password (more secure)
         let currentRole = 'advisor';
         let currentDate = new Date();
         let selectedSlot = null;
         let jobs = {};
-        let syncInterval = null;
-        let isOnline = navigator.onLine;
+        let isModalOpen = false;
 
-        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const ADVISOR_PASSWORD = 'comfy2024';
+        const ADMIN_PASSWORD = 'admin2024#';
         const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-        // ==================== DAY OF WEEK CALCULATION ====================
-        // Function to calculate day of week without timezone issues (works on ALL devices including mobile Safari)
-        function getDayOfWeek(year, month, day) {
-            // Zeller's congruence - mathematical formula that works consistently across all platforms
-            if (month < 3) {
-                month += 12;
-                year -= 1;
-            }
-            const K = year % 100;
-            const J = Math.floor(year / 100);
-            const h = (day + Math.floor(13 * (month + 1) / 5) + K + Math.floor(K / 4) + Math.floor(J / 4) - 2 * J) % 7;
-            // Convert to 0=Sunday, 1=Monday, etc.
-            return (h + 6) % 7;
-        }
-
-        // ==================== FIREBASE REST API FUNCTIONS ====================
-        async function firebaseFetch(path, options = {}) {
-            const url = `${FIREBASE_CONFIG.databaseURL}/${path}.json`;
-            const method = options.method || 'GET';
-            const body = options.body ? JSON.stringify(options.body) : undefined;
-
-            try {
-                const response = await fetch(url, {
-                    method,
-                    headers: { 'Content-Type': 'application/json' },
-                    body
-                });
-
-                if (!response.ok) {
-                    console.error(`Firebase error: ${response.status} ${response.statusText}`);
-                    return null;
-                }
-
-                return await response.json();
-            } catch (error) {
-                console.error('Firebase fetch error:', error);
-                updateSyncStatus(false, 'Offline - using local data');
-                return null;
-            }
-        }
-
-        async function loadJobsFromFirebase() {
-            const data = await firebaseFetch('jobs');
-            if (data) {
-                jobs = data || {};
-                updateSyncStatus(true, 'Synced');
-                return true;
-            }
-            return false;
-        }
-
-        async function saveJobToFirebase(dateKey, slotIndex, jobData) {
-            const path = `jobs/${dateKey}/${slotIndex}`;
-            const success = await firebaseFetch(path, {
-                method: 'PUT',
-                body: jobData
-            });
-
-            if (success !== null) {
-                updateSyncStatus(true, 'Synced');
-                return true;
-            }
-            return false;
-        }
-
-        async function deleteJobFromFirebase(dateKey, slotIndex) {
-            const path = `jobs/${dateKey}/${slotIndex}`;
-            const response = await fetch(`${FIREBASE_CONFIG.databaseURL}/${path}.json`, {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' }
-            });
-
-            if (response.ok) {
-                updateSyncStatus(true, 'Synced');
-                return true;
-            }
-            return false;
-        }
-
-        // ==================== SLACK INTEGRATION ====================
-        async function postToSlack(jobData, action = 'created') {
-            const payload = {
-                text: `🔔 Job ${action.toUpperCase()}`,
-                blocks: [
-                    {
-                        type: "section",
-                        text: {
-                            type: "mrkdwn",
-                            text: `*Job ${action}* by *${currentRole === 'advisor' ? 'Comfort Advisor' : 'Admin'}*`
-                        }
-                    },
-                    {
-                        type: "section",
-                        fields: [
-                            {
-                                type: "mrkdwn",
-                                text: `*Customer:*\n${jobData.customer}`
-                            },
-                            {
-                                type: "mrkdwn",
-                                text: `*City:*\n${jobData.city}`
-                            },
-                            {
-                                type: "mrkdwn",
-                                text: `*Details:*\n${jobData.jobDetails}`
-                            },
-                            {
-                                type: "mrkdwn",
-                                text: `*Phone:*\n${jobData.phone || 'N/A'}`
-                            }
-                        ]
-                    }
-                ]
-            };
-
-            try {
-                await fetch(SLACK_WEBHOOK, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                console.log('Slack notification sent');
-            } catch (error) {
-                console.error('Slack post error:', error);
-            }
-        }
-
-        // ==================== SYNC STATUS UI ====================
-        function updateSyncStatus(synced, message = '') {
-            const indicator1 = document.getElementById('syncIndicator');
-            const indicator2 = document.getElementById('syncIndicator2');
-            const status1 = document.getElementById('syncStatus');
-            const status2 = document.getElementById('syncStatus2');
-
-            if (synced) {
-                indicator1?.classList.add('synced');
-                indicator2?.classList.add('synced');
-            } else {
-                indicator1?.classList.remove('synced');
-                indicator2?.classList.remove('synced');
-            }
-
-            if (message) {
-                if (status1) status1.textContent = message;
-                if (status2) status2.textContent = message;
-            }
-        }
-
         // ==================== AUTHENTICATION ====================
-        // Role selection
         document.querySelectorAll('.role-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
@@ -1016,7 +684,7 @@
             });
         });
 
-        async function handleLogin() {
+        function handleLogin() {
             const password = document.getElementById('passwordInput').value;
             const errorDiv = document.getElementById('loginError');
 
@@ -1025,52 +693,42 @@
                 return;
             }
 
-            // Check password based on selected role
             const correctPassword = currentRole === 'advisor' ? ADVISOR_PASSWORD : ADMIN_PASSWORD;
             
             if (password !== correctPassword) {
-                errorDiv.textContent = 'Incorrect password for this role';
+                errorDiv.textContent = 'Incorrect password';
                 return;
             }
 
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('appContainer').classList.add('show');
             document.getElementById('roleDisplay').textContent = currentRole === 'advisor' ? 'Comfort Advisor' : 'Admin';
+            document.getElementById('passwordInput').value = '';
             
-            // Load jobs and start syncing
-            await loadJobsFromFirebase();
+            loadData();
             render();
-            startRealTimeSync();
         }
 
         function handleLogout() {
             document.getElementById('loginScreen').style.display = 'flex';
             document.getElementById('appContainer').classList.remove('show');
-            document.getElementById('passwordInput').value = '';
-            document.getElementById('loginError').textContent = '';
             currentDate = new Date();
             jobs = {};
-            stopRealTimeSync();
+            selectedSlot = null;
+            isModalOpen = false;
         }
 
-        // ==================== REAL-TIME SYNC ====================
-        function startRealTimeSync() {
-            updateSyncStatus(true, 'Connected');
-            // Sync every 3 seconds
-            syncInterval = setInterval(async () => {
-                await loadJobsFromFirebase();
-                render();
-            }, 3000);
+        // ==================== LOCAL STORAGE ====================
+        function loadData() {
+            const stored = localStorage.getItem('comfyJobBoard');
+            jobs = stored ? JSON.parse(stored) : {};
         }
 
-        function stopRealTimeSync() {
-            if (syncInterval) {
-                clearInterval(syncInterval);
-                syncInterval = null;
-            }
+        function saveData() {
+            localStorage.setItem('comfyJobBoard', JSON.stringify(jobs));
         }
 
-        // ==================== CALENDAR LOGIC ====================
+        // ==================== CALENDAR ====================
         function formatDateKey(date) {
             const year = date.getFullYear();
             const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -1086,48 +744,38 @@
             return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
         }
 
-        function isMobile() {
-            return window.innerWidth <= 768;
-        }
-
         function renderMonth(monthDate, containerId) {
             const daysInMonth = getDaysInMonth(monthDate);
             const firstDay = getFirstDayOfMonth(monthDate);
             const monthYear = monthNames[monthDate.getMonth()] + ' ' + monthDate.getFullYear();
-            const mobile = isMobile();
+            const isMobile = window.innerWidth <= 768;
 
             let html = `<div class="month-card">
                 <div class="month-title">${monthYear}</div>
                 <div class="days-grid">`;
 
-            // Day headers
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
             dayNames.forEach(day => {
-                html += `<div class="day-header">${day.slice(0, 3)}</div>`;
+                html += `<div class="day-header">${day}</div>`;
             });
 
-            // Empty cells before first day
             for (let i = 0; i < firstDay; i++) {
                 html += `<div class="day-cell" style="background: #f0f0f0;"></div>`;
             }
 
-            // Days of month
             for (let day = 1; day <= daysInMonth; day++) {
                 const date = new Date(monthDate.getFullYear(), monthDate.getMonth(), day);
                 const dateKey = formatDateKey(date);
                 const dayJobs = jobs[dateKey] || [{}, {}, {}, {}];
                 
-                // Count filled jobs
                 const jobCount = Object.values(dayJobs).filter(j => j && j.customer).length;
                 const hasJobs = jobCount > 0;
 
-                if (mobile) {
-                    // Mobile: Compact day view with click to see slots
-                    html += `<div class="day-cell ${hasJobs ? 'has-jobs' : ''}" onclick="openDayDetail('${dateKey}', ${day})">
+                if (isMobile) {
+                    html += `<div class="day-cell ${hasJobs ? 'has-jobs' : ''}" onclick="handleDayCellClick('${dateKey}', ${day})">
                         <div class="day-number">${day}</div>
-                        ${hasJobs ? `<div class="job-indicator">●●●</div>` : ''}
                     </div>`;
                 } else {
-                    // Desktop: Show all slots in day cell
                     html += `<div class="day-cell">
                         <div class="day-number">${day}</div>
                         ${hasJobs ? `<div class="job-count-badge">${jobCount}</div>` : ''}
@@ -1136,15 +784,14 @@
                     for (let slot = 0; slot < 4; slot++) {
                         const job = dayJobs[slot] || {};
                         if (job.customer) {
-                            html += `<div class="job-slot filled" onclick="openJobModal('${dateKey}', ${slot})" title="Click to view/edit">
+                            html += `<div class="job-slot filled" onclick="openJobModal('${dateKey}', ${slot})">
                                 <div class="slot-content">
                                     <div class="job-customer">${job.customer}</div>
                                     <div class="job-city">${job.city}</div>
-                                    <div class="job-details">${job.jobDetails.substring(0, 30)}...</div>
                                 </div>
                             </div>`;
                         } else {
-                            html += `<div class="job-slot" onclick="openJobModal('${dateKey}', ${slot})" title="Click to add job">
+                            html += `<div class="job-slot" onclick="openJobModal('${dateKey}', ${slot})">
                                 <div class="slot-label">Slot ${slot + 1}</div>
                             </div>`;
                         }
@@ -1154,7 +801,6 @@
                 }
             }
 
-            // Empty cells after last day
             const totalCells = firstDay + daysInMonth;
             const remainingCells = (Math.ceil(totalCells / 7) * 7) - totalCells;
             for (let i = 0; i < remainingCells; i++) {
@@ -1189,45 +835,42 @@
             render();
         }
 
+        function handleDayCellClick(dateKey, dayNum) {
+            // Show detailed view for mobile
+            alert('Click a slot to add or edit a job. This feature works better on desktop.');
+        }
+
         // ==================== JOB MODAL ====================
         function openJobModal(dateKey, slotIndex) {
-            // Force close day detail modal completely
-            const dayDetailModal = document.getElementById('dayDetailModal');
-            dayDetailModal.classList.remove('show');
-            dayDetailModal.style.display = 'none';
-            
+            // Prevent opening if modal is already open
+            if (isModalOpen) return;
+            isModalOpen = true;
+
             selectedSlot = { dateKey, slotIndex };
             const dayJobs = jobs[dateKey] || [{}, {}, {}, {}];
             const job = dayJobs[slotIndex] || {};
             const isEditing = !!job.customer;
 
-            // Set form title
-            document.getElementById('modalTitle').textContent = isEditing ? 'Edit Job' : 'Add New Job';
+            document.getElementById('modalTitle').textContent = isEditing ? 'Edit Job' : 'Add Job';
 
-            // Check if advisor and editing (readonly mode)
             const isReadonly = currentRole === 'advisor' && isEditing;
 
             if (isReadonly) {
                 document.getElementById('readonlyNotice').innerHTML = 
-                    '<div class="readonly-notice">📋 You can view this job but cannot edit it. Only admins can modify existing jobs.</div>';
+                    '<div class="readonly-notice">📋 You can view this job but cannot edit it.</div>';
             } else {
                 document.getElementById('readonlyNotice').innerHTML = '';
             }
 
-            // Fill form
             document.getElementById('customerName').value = job.customer || '';
             document.getElementById('city').value = job.city || '';
             document.getElementById('jobDetails').value = job.jobDetails || '';
-            document.getElementById('phone').value = job.phone || '';
-            document.getElementById('address').value = job.address || '';
 
-            // Set form readonly state
-            const inputs = ['customerName', 'city', 'jobDetails', 'phone', 'address'];
+            const inputs = ['customerName', 'city', 'jobDetails'];
             inputs.forEach(id => {
                 document.getElementById(id).readOnly = isReadonly;
             });
 
-            // Show/hide buttons
             document.getElementById('saveBtn').style.display = isReadonly ? 'none' : 'block';
             document.getElementById('deleteBtn').style.display = (isEditing && currentRole === 'admin') ? 'block' : 'none';
 
@@ -1237,145 +880,67 @@
         function closeModal() {
             document.getElementById('jobModal').classList.remove('show');
             selectedSlot = null;
+            isModalOpen = false;
+            
+            // Completely reset form
+            ['customerName', 'city', 'jobDetails'].forEach(id => {
+                const elem = document.getElementById(id);
+                elem.value = '';
+                elem.readOnly = false;
+            });
+            
+            // Clear focus
+            document.activeElement.blur();
         }
 
-        async function saveJob() {
+        function saveJob() {
             const customerName = document.getElementById('customerName').value.trim();
             const city = document.getElementById('city').value.trim();
             const jobDetails = document.getElementById('jobDetails').value.trim();
 
             if (!customerName || !city || !jobDetails) {
-                alert('Please fill in all required fields: Customer Name, City, and Job Details');
+                alert('Please fill in all required fields');
                 return;
             }
 
-            const jobData = {
+            if (!jobs[selectedSlot.dateKey]) {
+                jobs[selectedSlot.dateKey] = [{}, {}, {}, {}];
+            }
+
+            jobs[selectedSlot.dateKey][selectedSlot.slotIndex] = {
                 customer: customerName,
                 city: city,
-                jobDetails: jobDetails,
-                phone: document.getElementById('phone').value.trim(),
-                address: document.getElementById('address').value.trim(),
-                createdBy: currentRole,
-                createdDate: new Date().toISOString()
+                jobDetails: jobDetails
             };
 
-            // Ensure date structure exists
-            if (!jobs[selectedSlot.dateKey]) {
-                jobs[selectedSlot.dateKey] = {};
-            }
-
-            // Save to Firebase
-            const success = await saveJobToFirebase(selectedSlot.dateKey, selectedSlot.slotIndex, jobData);
-            
-            if (success) {
-                jobs[selectedSlot.dateKey][selectedSlot.slotIndex] = jobData;
-                
-                // Post to Slack
-                await postToSlack(jobData, 'created');
-                
-                render();
-                closeModal();
-            } else {
-                alert('Failed to save job. Please check your connection.');
-            }
+            saveData();
+            render();
+            closeModal();
         }
 
-        async function deleteJob() {
+        function deleteJob() {
             if (currentRole !== 'admin') {
                 alert('Only admins can delete jobs');
                 return;
             }
 
-            if (confirm('Are you sure you want to delete this job?')) {
-                const success = await deleteJobFromFirebase(selectedSlot.dateKey, selectedSlot.slotIndex);
-                
-                if (success) {
-                    jobs[selectedSlot.dateKey][selectedSlot.slotIndex] = {};
-                    render();
-                    closeModal();
-                } else {
-                    alert('Failed to delete job. Please check your connection.');
-                }
-            }
-        }
-
-        // ==================== DAY DETAIL MODAL ====================
-        function openDayDetail(dateKey, dayNum) {
-            const dayJobs = jobs[dateKey] || [{}, {}, {}, {}];
-            
-            // Parse date string to get year, month, day
-            const [year, month, day] = dateKey.split('-').map(Number);
-            
-            // Use getDayOfWeek function instead of Date object (works on all platforms including mobile)
-            const dayOfWeek = getDayOfWeek(year, month, day);
-            const dayName = dayNames[dayOfWeek];
-
-            document.getElementById('dayDetailTitle').textContent = `${dayName}, ${monthNames[month - 1]} ${dayNum}`;
-
-            let html = '';
-            let hasAnyJobs = false;
-
-            for (let slot = 0; slot < 4; slot++) {
-                const job = dayJobs[slot] || {};
-                if (job.customer) {
-                    hasAnyJobs = true;
-                    html += `<div class="slot-card filled" onclick="openJobModal('${dateKey}', ${slot})">
-                        <div class="slot-number">Slot ${slot + 1}</div>
-                        <div class="slot-card-content">
-                            <div class="slot-card-customer">${job.customer}</div>
-                            <div class="slot-card-city">${job.city}</div>
-                            <div class="slot-card-details">${job.jobDetails}</div>
-                            ${job.phone ? `<div style="margin-top: 6px; color: #666; font-size: 11px;">📞 ${job.phone}</div>` : ''}
-                            ${job.address ? `<div style="margin-top: 4px; color: #666; font-size: 11px;">📍 ${job.address}</div>` : ''}
-                        </div>
-                    </div>`;
-                } else {
-                    html += `<div class="slot-card" onclick="openJobModal('${dateKey}', ${slot})">
-                        <div class="slot-number">Slot ${slot + 1}</div>
-                        <div class="slot-empty-text">Click to add job</div>
-                    </div>`;
-                }
-            }
-
-            document.getElementById('dayDetailSlots').innerHTML = html;
-            document.getElementById('dayDetailModal').classList.add('show');
-        }
-
-        function closeDayDetail() {
-            document.getElementById('dayDetailModal').classList.remove('show');
-        }
-
-        // ==================== MODAL BACKDROP CLOSE ====================
-        document.getElementById('jobModal').addEventListener('click', function(e) {
-            if (e.target === this) closeModal();
-        });
-
-        document.getElementById('dayDetailModal').addEventListener('click', function(e) {
-            if (e.target === this) closeDayDetail();
-        });
-
-        // ==================== WINDOW EVENTS ====================
-        let resizeTimeout;
-        window.addEventListener('resize', function() {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(function() {
+            if (confirm('Delete this job?')) {
+                jobs[selectedSlot.dateKey][selectedSlot.slotIndex] = {};
+                saveData();
                 render();
-            }, 250);
+                closeModal();
+            }
+        }
+
+        // ==================== MODAL CLOSE ON BACKDROP ====================
+        document.getElementById('jobModal').addEventListener('click', function(e) {
+            if (e.target === this && isModalOpen) {
+                closeModal();
+            }
         });
 
-        // Track online/offline status
-        window.addEventListener('online', () => {
-            isOnline = true;
-            updateSyncStatus(true, 'Connected');
-        });
-
-        window.addEventListener('offline', () => {
-            isOnline = false;
-            updateSyncStatus(false, 'Offline');
-        });
-
-        // Initialize Firebase status check
-        updateSyncStatus(true, 'Firebase Ready');
+        // ==================== INITIAL LOAD ====================
+        loadData();
     </script>
 </body>
 </html>
