@@ -851,6 +851,7 @@
         let currentRole = 'advisor';
         let currentDate = new Date();
         let selectedSlot = null;
+        let modalOpen = false;
         let jobs = {};
         let syncInterval = null;
         let isOnline = navigator.onLine;
@@ -1235,10 +1236,17 @@
         }
 
         function closeModal() {
-            document.getElementById('jobModal').classList.remove('show');
-            selectedSlot = null;
-        }
-
+    document.getElementById('jobModal').classList.remove('show');
+    selectedSlot = null;
+    modalOpen = false;
+    
+    // Clear form
+    ['customerName', 'city', 'jobDetails'].forEach(id => {
+        document.getElementById(id).value = '';
+    });
+    
+    document.activeElement.blur();
+}
         async function saveJob() {
             const customerName = document.getElementById('customerName').value.trim();
             const city = document.getElementById('city').value.trim();
