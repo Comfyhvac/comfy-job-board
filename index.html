@@ -741,7 +741,7 @@
             <p>Job Board Access</p>
             <div class="login-form">
                 <input type="password" id="passwordInput" placeholder="Enter password" />
-                
+
                 <div class="role-selector">
                     <button class="role-btn active" data-role="advisor">Comfort Advisor</button>
                     <button class="role-btn" data-role="admin">Admin</button>
@@ -1028,7 +1028,7 @@
 
             // Check password based on selected role
             const correctPassword = currentRole === 'advisor' ? ADVISOR_PASSWORD : ADMIN_PASSWORD;
-            
+
             if (password !== correctPassword) {
                 errorDiv.textContent = 'Incorrect password for this role';
                 return;
@@ -1037,7 +1037,7 @@
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('appContainer').classList.add('show');
             document.getElementById('roleDisplay').textContent = currentRole === 'advisor' ? 'Comfort Advisor' : 'Admin';
-            
+
             // Load jobs and start syncing
             await loadJobsFromFirebase();
             render();
@@ -1116,7 +1116,7 @@
                 const date = new Date(monthDate.getFullYear(), monthDate.getMonth(), day);
                 const dateKey = formatDateKey(date);
                 const dayJobs = jobs[dateKey] || [{}, {}, {}, {}];
-                
+
                 // Count filled jobs
                 const jobCount = Object.values(dayJobs).filter(j => j && j.customer).length;
                 const hasJobs = jobCount > 0;
@@ -1170,7 +1170,7 @@
             const month1 = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
             const month2 = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
 
-            document.getElementById('monthDisplay').textContent = 
+            document.getElementById('monthDisplay').textContent =
                 monthNames[month1.getMonth()] + ' & ' + monthNames[month2.getMonth()] + ' ' + month1.getFullYear();
 
             let html = `<div id="month1"></div><div id="month2"></div>`;
@@ -1196,7 +1196,7 @@
             const dayDetailModal = document.getElementById('dayDetailModal');
             dayDetailModal.classList.remove('show');
             dayDetailModal.style.display = 'none';
-            
+
             selectedSlot = { dateKey, slotIndex };
             const dayJobs = jobs[dateKey] || [{}, {}, {}, {}];
             const job = dayJobs[slotIndex] || {};
@@ -1209,7 +1209,7 @@
             const isReadonly = currentRole === 'advisor' && isEditing;
 
             if (isReadonly) {
-                document.getElementById('readonlyNotice').innerHTML = 
+                document.getElementById('readonlyNotice').innerHTML =
                     '<div class="readonly-notice">📋 You can view this job but cannot edit it. Only admins can modify existing jobs.</div>';
             } else {
                 document.getElementById('readonlyNotice').innerHTML = '';
@@ -1239,12 +1239,12 @@
     document.getElementById('jobModal').classList.remove('show');
     selectedSlot = null;
     modalOpen = false;
-    
+
     // Clear form
     ['customerName', 'city', 'jobDetails'].forEach(id => {
         document.getElementById(id).value = '';
     });
-    
+
     document.activeElement.blur();
 }
         async function saveJob() {
@@ -1274,13 +1274,13 @@
 
             // Save to Firebase
             const success = await saveJobToFirebase(selectedSlot.dateKey, selectedSlot.slotIndex, jobData);
-            
+
             if (success) {
                 jobs[selectedSlot.dateKey][selectedSlot.slotIndex] = jobData;
-                
+
                 // Post to Slack
                 await postToSlack(jobData, 'created');
-                
+
                 render();
                 closeModal();
             } else {
@@ -1296,7 +1296,7 @@
 
             if (confirm('Are you sure you want to delete this job?')) {
                 const success = await deleteJobFromFirebase(selectedSlot.dateKey, selectedSlot.slotIndex);
-                
+
                 if (success) {
                     jobs[selectedSlot.dateKey][selectedSlot.slotIndex] = {};
                     render();
@@ -1310,10 +1310,10 @@
         // ==================== DAY DETAIL MODAL ====================
         function openDayDetail(dateKey, dayNum) {
             const dayJobs = jobs[dateKey] || [{}, {}, {}, {}];
-            
+
             // Parse date string to get year, month, day
             const [year, month, day] = dateKey.split('-').map(Number);
-            
+
             // Use getDayOfWeek function instead of Date object (works on all platforms including mobile)
             const dayOfWeek = getDayOfWeek(year, month, day);
             const dayName = dayNames[dayOfWeek];
@@ -1385,5 +1385,140 @@
         // Initialize Firebase status check
         updateSyncStatus(true, 'Firebase Ready');
     </script>
+    <!-- ==================== TV MODE ADD-ON ====================
+         Paste this whole block right ABOVE the closing </body> tag.
+         It does nothing unless the page URL ends with ?tv=1
+         (e.g. https://your-site/index.html?tv=1), so phones and
+         desktops keep working exactly as before.
+    ============================================================ -->
+    <style>
+        body.tv-mode { cursor: none; overflow: hidden; }
+        body.tv-mode .app-container.show { height: 100vh; }
+        body.tv-mode .header { padding: 1vh 1.5vw; }
+        body.tv-mode .header-content { max-width: none; }
+        body.tv-mode .header h1 { font-size: 2vw; }
+        body.tv-mode .role-badge,
+        body.tv-mode .logout-btn,
+        body.tv-mode .controls { display: none; }
+        body.tv-mode .header-info { gap: 2vw; }
+        body.tv-mode #syncStatus2 { font-size: 1vw !important; }
+        .tv-clock { display: none; }
+        body.tv-mode .tv-clock { display: block; font-size: 1.6vw; font-weight: 600; }
+        body.tv-mode .main-content { max-width: none; padding: 1vh 1vw; display: flex; flex-direction: column; min-height: 0; }
+        body.tv-mode .calendar-grid { display: flex; flex: 1; min-height: 0; margin: 0; }
+
+        .tv-board { flex: 1; display: grid; grid-template-columns: repeat(7, 1fr); grid-template-rows: auto 1fr 1fr; gap: 0.5vw; min-height: 0; }
+        .tv-dayname { background: #185FA5; color: white; text-align: center; font-weight: 700; font-size: 1.2vw; padding: 0.6vh 0; border-radius: 6px; }
+        .tv-day { background: white; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.12); padding: 0.5vw; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+        .tv-day.today { outline: 0.25vw solid #D9534F; outline-offset: -0.25vw; }
+        .tv-day.past { opacity: 0.45; }
+        .tv-date { display: flex; align-items: center; gap: 0.5vw; font-weight: 700; color: #0C447C; font-size: 1.3vw; margin-bottom: 0.4vw; }
+        .tv-today-tag { background: #D9534F; color: white; font-size: 0.8vw; padding: 0.1vw 0.5vw; border-radius: 4px; }
+        .tv-count { margin-left: auto; background: #D9534F; color: white; border-radius: 50%; width: 1.6vw; height: 1.6vw; display: flex; align-items: center; justify-content: center; font-size: 0.9vw; }
+        .tv-jobs { flex: 1; display: flex; flex-direction: column; gap: 0.4vw; min-height: 0; }
+        .tv-job { flex: 0 1 auto; min-height: 0; overflow: hidden; background: #e8f4f8; border-left: 0.35vw solid #185FA5; border-radius: 4px; padding: 0.35vw 0.5vw; }
+        .tv-job-customer { font-weight: 700; color: #0C447C; font-size: 1.15vw; line-height: 1.2; }
+        .tv-job-city { color: #555; font-size: 0.95vw; }
+        .tv-job-details { color: #222; font-size: 0.9vw; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .tv-empty { color: #aaa; font-style: italic; font-size: 1vw; }
+    </style>
+    <script>
+    (function () {
+        // Only runs on the TV (URL contains ?tv=1). Everyone else is unaffected.
+        if (!new URLSearchParams(location.search).has('tv')) return;
+
+        document.body.classList.add('tv-mode');
+        const TV_AUTH_KEY = 'comfyTvAuth';
+
+        // Date + time in the header
+        const clock = document.createElement('div');
+        clock.className = 'tv-clock';
+        document.querySelector('.header-info').prepend(clock);
+        function tick() {
+            const n = new Date();
+            clock.textContent =
+                n.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) +
+                ' · ' + n.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        }
+        tick();
+        setInterval(tick, 15000);
+
+        function esc(s) {
+            return String(s == null ? '' : s)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        function dayJobList(dateKey) {
+            const dayJobs = jobs[dateKey];
+            if (!dayJobs) return [];
+            return Object.keys(dayJobs)
+                .sort((a, b) => a - b)
+                .map(k => dayJobs[k])
+                .filter(j => j && j.customer);
+        }
+
+        // TV layout: this week + next week, big text, empty slots hidden
+        render = function () {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const todayKey = formatDateKey(today);
+            const start = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay());
+
+            let html = '<div class="tv-board">';
+            dayNames.forEach(d => { html += `<div class="tv-dayname">${d}</div>`; });
+
+            for (let i = 0; i < 14; i++) {
+                const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+                const key = formatDateKey(d);
+                const isToday = key === todayKey;
+                const cls = isToday ? 'today' : (d < today ? 'past' : '');
+                const list = dayJobList(key);
+
+                html += `<div class="tv-day ${cls}">
+                    <div class="tv-date">
+                        <span>${monthNames[d.getMonth()].slice(0, 3)} ${d.getDate()}</span>
+                        ${isToday ? '<span class="tv-today-tag">TODAY</span>' : ''}
+                        ${list.length ? `<span class="tv-count">${list.length}</span>` : ''}
+                    </div>
+                    <div class="tv-jobs">`;
+                if (!list.length) html += '<div class="tv-empty">No jobs</div>';
+                list.forEach(j => {
+                    html += `<div class="tv-job">
+                        <div class="tv-job-customer">${esc(j.customer)}</div>
+                        <div class="tv-job-city">${esc(j.city)}</div>
+                        <div class="tv-job-details">${esc(j.jobDetails)}</div>
+                    </div>`;
+                });
+                html += '</div></div>';
+            }
+            html += '</div>';
+            document.getElementById('calendarGrid').innerHTML = html;
+        };
+
+        // Remember the TV's login so it comes back on its own after a reboot
+        const originalLogin = handleLogin;
+        handleLogin = async function () {
+            await originalLogin();
+            if (document.getElementById('appContainer').classList.contains('show')) {
+                try { localStorage.setItem(TV_AUTH_KEY, '1'); } catch (e) {}
+            }
+        };
+        let remembered = false;
+        try { remembered = localStorage.getItem(TV_AUTH_KEY) === '1'; } catch (e) {}
+        if (remembered) {
+            currentRole = 'advisor'; // TV is always view-only
+            document.getElementById('passwordInput').value = ADVISOR_PASSWORD;
+            handleLogin();
+        }
+
+        // Reload once a night (3 AM) so the TV never goes stale
+        const now = new Date(), next = new Date(now);
+        next.setHours(3, 0, 0, 0);
+        if (next <= now) next.setDate(next.getDate() + 1);
+        setTimeout(() => location.reload(), next - now);
+    })();
+    </script>
+    <!-- ==================== END TV MODE ADD-ON ==================== -->
 </body>
 </html>
